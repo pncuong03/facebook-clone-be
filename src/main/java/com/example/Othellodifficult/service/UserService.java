@@ -4,7 +4,7 @@ import com.example.Othellodifficult.dto.user.UserRequest;
 import com.example.Othellodifficult.entity.UserEntity;
 import com.example.Othellodifficult.mapper.UserMapper;
 import com.example.Othellodifficult.repository.UserRepository;
-import com.example.Othellodifficult.token.TokenHandler;
+import com.example.Othellodifficult.token.TokenHelper;
 import lombok.AllArgsConstructor;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.stereotype.Service;
@@ -21,14 +21,14 @@ public class UserService {
         signUpRequest.setPassword(BCrypt.hashpw(signUpRequest.getPassword(), BCrypt.gensalt()));
         UserEntity userEntity = UserMapper.getEntityFromRequest(signUpRequest);
         userRepository.save(userEntity);
-        return TokenHandler.generateToken(userEntity);
+        return TokenHelper.generateToken(userEntity);
     }
 
     public String logIn(UserRequest logInRequest){
         UserEntity userEntity = userRepository.findByUsername(logInRequest.getUsername());
         String currentHashedPassword = userEntity.getPassword();
         if (BCrypt.checkpw(logInRequest.getPassword(), currentHashedPassword)){
-            return TokenHandler.generateToken(userEntity);
+            return TokenHelper.generateToken(userEntity);
         }
         throw new RuntimeException("Incorrect password!!!");
     }

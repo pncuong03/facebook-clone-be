@@ -7,7 +7,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 
 import java.util.Date;
 
-public class TokenHandler {
+public class TokenHelper {
     private static final String SECRET_KEY = "yourSecretKeyyourSecretKeyyourSecretKeyyourSecretKeyyourSecretKeyyourSecretKeyyourSecretKeyyourSecretKeyyourSecretKeyyourSecretKeyyourSecretKeyyourSecretKey";
     private static final long EXPIRATION_TIME = 864_000_000; // 10 days
 
@@ -33,14 +33,4 @@ public class TokenHandler {
                 .getBody();
         return claims.get("user_id", Long.class);
     }
-
-    public static boolean validateToken(String token) {
-        try {
-            Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
 }

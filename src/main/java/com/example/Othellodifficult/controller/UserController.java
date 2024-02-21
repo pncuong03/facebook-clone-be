@@ -1,14 +1,12 @@
 package com.example.Othellodifficult.controller;
 
 import com.example.Othellodifficult.dto.user.TokenResponse;
-import com.example.Othellodifficult.dto.user.UserIdResponse;
 import com.example.Othellodifficult.dto.user.UserRequest;
 import com.example.Othellodifficult.entity.UserEntity;
 import com.example.Othellodifficult.service.UserService;
-import com.example.Othellodifficult.token.TokenHandler;
+import com.example.Othellodifficult.token.TokenHelper;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +34,6 @@ public class UserController {
 
     @PostMapping
     public String genToken(@RequestBody UserEntity userEntity){
-        return TokenHandler.generateToken(userEntity);
+        return TokenHelper.generateToken(userEntity);
     }
 }
