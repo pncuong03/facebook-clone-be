@@ -13,13 +13,14 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
     public String signUp(UserRequest signUpRequest){
         if (userRepository.existsByUsername(signUpRequest.getUsername())){
             throw new RuntimeException("Username already exists!!!");
         }
         signUpRequest.setPassword(BCrypt.hashpw(signUpRequest.getPassword(), BCrypt.gensalt()));
-        UserEntity userEntity = UserMapper.getEntityFromRequest(signUpRequest);
+        UserEntity userEntity = userMapper.getEntityFromRequest(signUpRequest);
         userRepository.save(userEntity);
         return TokenHelper.generateToken(userEntity);
     }

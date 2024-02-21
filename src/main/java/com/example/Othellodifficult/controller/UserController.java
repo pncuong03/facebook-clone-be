@@ -31,9 +31,4 @@ public class UserController {
     public ResponseEntity logIn(@RequestBody @Valid UserRequest logInRequest){
         return new ResponseEntity(new TokenResponse(userService.logIn(logInRequest)), HttpStatus.OK);
     }
-
-    @PostMapping
-    public String genToken(@RequestBody UserEntity userEntity){
-        return TokenHelper.generateToken(userEntity);
-    }
 }
