@@ -1,5 +1,5 @@
 server:
-  port: 8081
+  port: 8086
 
 spring:
   jpa:
@@ -9,24 +9,27 @@ spring:
         format_sql: true
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/othello_difficult
+    url: jdbc:postgresql://localhost:5432/chat_app
     username: postgres
     password: 101119
     driver-class-name: org.postgresql.Driver
-#datasource:
-#  url: jdbc:mysql://localhost:3306/microservice_product
-#  username: your_mysql_username
-#  password: your_mysql_password
-#  driver-class-name: com.mysql.cj.jdbc.Driver
 
-#  CREATE TABLE tbl_users(
-#  id	SERIAL PRIMARY KEY,
+#  CREATE TABLE tbl_user(
+#  id BIGSERIAL PRIMARY KEY,
 #  username VARCHAR,
-#  password VARCHAR
+#  password VARCHAR,
+#  image_url VARCHAR,
+#  birthday VARCHAR,
+#  description VARCHAR
 #  );
 #
-#  CREATE TABLE tbl_difficults(
-#  id	SERIAL PRIMARY KEY,
-#  amount INTEGER,
-#  user_id BIGINT REFERENCES tbl_users(id)
-#  )
+#  CREATE TABLE tbl_group_chat(
+#  id BIGSERIAL PRIMARY KEY,
+#  name VARCHAR
+#  );
+#
+#  CREATE TABLE tbl_user_group_chat(
+#  id BIGSERIAL PRIMARY KEY,
+#  user_id BIGINT REFERENCES tbl_user(id),
+#  group_chat_id BIGINT REFERENCES tbl_group_chat(id)
+#  );
