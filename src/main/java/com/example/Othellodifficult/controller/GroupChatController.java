@@ -18,7 +18,7 @@ public class GroupChatController {
     }
     @GetMapping("/{id}")
     public List<GroupChatMemberOutPut> getGroupMemBer(@PathVariable(value = "id") Long groupId){
-        return groupChatService.getGroupMember(groupId);
+        return groupChatService.getGroupChatMember(groupId);
     }
     @PostMapping("/add-new")
     public String addNewMember(@RequestBody GroupChatAddNewMemberInput groupChatAddNewMemberInput){

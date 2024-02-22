@@ -50,7 +50,7 @@ public class GroupChatService {
 
     }
 
-    public List<GroupChatMemberOutPut> getGroupMember(Long groupId) {
+    public List<GroupChatMemberOutPut> getGroupChatMember(Long groupId) {
         // get  managerId
         List<UserGroupChatEntity> listUserGroupChatEntity = userGroupChatRepository.findAllByGroupId(groupId);
         Long managerId = groupChatRepository.findById(groupId).get().getManagerId();
