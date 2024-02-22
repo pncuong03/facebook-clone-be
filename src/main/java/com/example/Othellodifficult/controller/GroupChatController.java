@@ -1,7 +1,6 @@
 package com.example.Othellodifficult.controller;
 
-import com.example.Othellodifficult.dto.groupchat.GroupChatInput;
-import com.example.Othellodifficult.dto.groupchat.GroupMemberOutPut;
+import com.example.Othellodifficult.dto.groupchat.*;
 import com.example.Othellodifficult.service.GroupChatService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +17,21 @@ public class GroupChatController {
         groupChatService.create(groupChatInput, accessToken);
     }
     @GetMapping("/{id}")
-    public List<GroupMemberOutPut> getGroupMemBer(@PathVariable(value = "id") Long groupId){
+    public List<GroupChatMemberOutPut> getGroupMemBer(@PathVariable(value = "id") Long groupId){
         return groupChatService.getGroupMember(groupId);
+    }
+    @PostMapping("/add-new")
+    public String addNewMember(@RequestBody GroupChatAddNewMemberInput groupChatAddNewMemberInput){
+        return groupChatService.addNewMember(groupChatAddNewMemberInput);
+    }
+    @DeleteMapping("/delete-member")
+    public String deleteMember(@RequestHeader("Authorization") String accessToken,
+                               @RequestBody GroupChatDeleteMemberInput groupChatDeleteMemberInput)
+    {
+        return groupChatService.deleteMember(accessToken, groupChatDeleteMemberInput);
+    }
+    @DeleteMapping("/leave-group")
+    public void leaveTheGroupChat(@RequestBody GroupChatLeaveTheGroupInput groupChatLeaveTheGroupInput){
+        groupChatService.leaveTheGroupChat(groupChatLeaveTheGroupInput);
     }
 }

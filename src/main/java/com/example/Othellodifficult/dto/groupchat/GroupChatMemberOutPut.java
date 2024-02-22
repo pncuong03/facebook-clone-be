@@ -7,7 +7,7 @@ import lombok.*;
 @Getter
 @Setter
 @Builder
-public class GroupMemberOutPut {
+public class GroupChatMemberOutPut {
     private Long id;
     private String username;
     private String image;

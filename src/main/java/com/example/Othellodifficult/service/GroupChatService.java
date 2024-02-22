@@ -1,7 +1,6 @@
 package com.example.Othellodifficult.service;
 
-import com.example.Othellodifficult.dto.groupchat.GroupChatInput;
-import com.example.Othellodifficult.dto.groupchat.GroupMemberOutPut;
+import com.example.Othellodifficult.dto.groupchat.*;
 import com.example.Othellodifficult.entity.GroupChatEntity;
 import com.example.Othellodifficult.entity.UserEntity;
 import com.example.Othellodifficult.entity.UserGroupChatEntity;
@@ -10,7 +9,6 @@ import com.example.Othellodifficult.repository.GroupChatRepository;
 import com.example.Othellodifficult.repository.UserGroupChatRepository;
 import com.example.Othellodifficult.repository.UserRepository;
 import com.example.Othellodifficult.token.TokenHelper;
-import io.swagger.v3.oas.annotations.servers.Server;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -52,30 +50,31 @@ public class GroupChatService {
 
     }
 
-    public List<GroupMemberOutPut> getGroupMember(Long groupId){
-        // lấy dc id member từ groupId
+    public List<GroupChatMemberOutPut> getGroupMember(Long groupId) {
+        // get  managerId
         List<UserGroupChatEntity> listUserGroupChatEntity = userGroupChatRepository.findAllByGroupId(groupId);
         Long managerId = groupChatRepository.findById(groupId).get().getManagerId();
-        // lấy thôn tin member
+        // get infor member
         List<UserEntity> listUserEntity = new ArrayList<>();
-        for(UserGroupChatEntity user : listUserGroupChatEntity){
+        for (UserGroupChatEntity user : listUserGroupChatEntity) {
             UserEntity userEntity = userRepository.findById(user.getUserId()).get();
             listUserEntity.add(userEntity);
         }
-        List<GroupMemberOutPut> groupMemberOutPutList = new ArrayList<>();
-        for(UserEntity user:listUserEntity){
-            if(user.getId() == managerId){
+        // map to output
+        List<GroupChatMemberOutPut> groupMemberOutPutList = new ArrayList<>();
+        for (UserEntity user : listUserEntity) {
+            if (user.getId() == managerId) {
                 groupMemberOutPutList.add(
-                        GroupMemberOutPut.builder()
+                        GroupChatMemberOutPut.builder()
                                 .id(user.getId())
                                 .username(user.getUsername())
                                 .image(null)
                                 .positionInGroup("Admin")
                                 .build()
                 );
-            }else{
+            } else {
                 groupMemberOutPutList.add(
-                        GroupMemberOutPut.builder()
+                        GroupChatMemberOutPut.builder()
                                 .id(user.getId())
                                 .username(user.getUsername())
                                 .image(null)
@@ -86,5 +85,82 @@ public class GroupChatService {
 
         }
         return groupMemberOutPutList;
+    }
+
+    public String addNewMember(GroupChatAddNewMemberInput groupChatAddNewMemberInput) {
+        /*   get all userId from UserGroupChat, compare userId from Input,
+            if it not exits then save new in UserGroupChat
+            Can return a string("Add new successfully") if it success, or return
+            string("The user is already in Group") if it doesn't*/
+        List<UserGroupChatEntity> listUserGroupChatEntity = userGroupChatRepository
+                .findAllByGroupId(
+                        groupChatAddNewMemberInput.getGroupId()
+                );
+        List<Long> listUserIdExitInGroup = new ArrayList<>();
+        for (UserGroupChatEntity userGroup : listUserGroupChatEntity) {
+            listUserIdExitInGroup.add(userRepository.findById(
+                    userGroup.getUserId()
+            ).get().getId());
+        }
+        for (Long newUserId : groupChatAddNewMemberInput.getListUserId()) {
+            if (!listUserIdExitInGroup.contains(newUserId)) {
+                userGroupChatRepository.save(
+                        UserGroupChatEntity.builder()
+                                .groupId(groupChatAddNewMemberInput.getGroupId())
+                                .userId(newUserId)
+                                .build()
+                );
+            } else {
+                return "The User is already in Group";
+
+            }
+        }
+        return "Add new Users successfull";
+        //
+    }
+
+    @Transactional
+
+    public String deleteMember(String token, GroupChatDeleteMemberInput groupChatDeleteMemberInput) {
+        Long CheckUserId = TokenHelper.getUserIdFromToken(token);
+        Long managerId = groupChatRepository
+                .findById(groupChatDeleteMemberInput.getGroupId())
+                .get().getManagerId();
+        if (CheckUserId == managerId) {
+            Long userDeleteId = groupChatDeleteMemberInput.getUserId();
+            if (userDeleteId != managerId) {
+                userGroupChatRepository.deleteByUserIdAndGroupId(userDeleteId,
+                        groupChatDeleteMemberInput.getGroupId());
+                return "Success";
+            } else {
+                return "You can't delete YourSelf";
+            }
+        }
+        return "You can't delete the others people";
+        // token.id = managerId => thi ms thuc hien
+        // neu ma manageId == userId => k cho
+    }
+
+    @Transactional
+    public void leaveTheGroupChat(GroupChatLeaveTheGroupInput groupChatLeaveTheGroupInput) {
+         /* Need to check the position of managerGroup, if the manager leave,
+        he will need to transfer his role to another
+     */
+        if (userGroupChatRepository.countByGroupId(
+                groupChatLeaveTheGroupInput.getGroupId()) > 1) // check the number of row in table UserGroupChat
+        {
+            userGroupChatRepository.deleteByUserIdAndGroupId(
+                    groupChatLeaveTheGroupInput.getUserId(),
+                    groupChatLeaveTheGroupInput.getGroupId()
+            );
+        } else {
+            // delte the last member in UserGroupChat table and delete immidiately table GroupChat with groupId
+            userGroupChatRepository.deleteByUserIdAndGroupId(
+                    groupChatLeaveTheGroupInput.getUserId(),
+                    groupChatLeaveTheGroupInput.getGroupId()
+            );
+            groupChatRepository.deleteById(groupChatLeaveTheGroupInput.getGroupId());
+        }
+
     }
 }
