@@ -10,6 +10,7 @@ import com.example.Othellodifficult.repository.UserGroupChatRepository;
 import com.example.Othellodifficult.repository.UserRepository;
 import com.example.Othellodifficult.token.TokenHelper;
 import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -37,7 +38,8 @@ public class GroupChatService {
                 UserGroupChatEntity.builder()
                         .userId(managerId)
                         .groupId(groupChatEntity.getId())
-                        .build());
+                        .build()
+        );
 
         for (Long userId : groupChatInput.getUserId()) {
             userGroupChatRepository.save(
@@ -53,7 +55,8 @@ public class GroupChatService {
     public List<GroupChatMemberOutPut> getGroupChatMember(Long groupId) {
         // get  managerId
         List<UserGroupChatEntity> listUserGroupChatEntity = userGroupChatRepository.findAllByGroupId(groupId);
-        Long managerId = groupChatRepository.findById(groupId).get().getManagerId();
+        GroupChatEntity groupChatEntity = groupChatRepository.findById(groupId).get();
+        Long managerId = groupChatEntity.getManagerId();
         // get infor member
         List<UserEntity> listUserEntity = new ArrayList<>();
         for (UserGroupChatEntity user : listUserGroupChatEntity) {
@@ -122,21 +125,24 @@ public class GroupChatService {
     @Transactional
 
     public String deleteMember(String token, GroupChatDeleteMemberInput groupChatDeleteMemberInput) {
-        Long CheckUserId = TokenHelper.getUserIdFromToken(token);
+        Long checkUserId = TokenHelper.getUserIdFromToken(token);
         Long managerId = groupChatRepository
                 .findById(groupChatDeleteMemberInput.getGroupId())
                 .get().getManagerId();
-        if (CheckUserId == managerId) {
-            Long userDeleteId = groupChatDeleteMemberInput.getUserId();
-            if (userDeleteId != managerId) {
-                userGroupChatRepository.deleteByUserIdAndGroupId(userDeleteId,
-                        groupChatDeleteMemberInput.getGroupId());
-                return "Success";
-            } else {
-                return "You can't delete YourSelf";
-            }
+        if (checkUserId != managerId) {
+            return "You can't delete the others people";
         }
-        return "You can't delete the others people";
+
+        Long userDeleteId = groupChatDeleteMemberInput.getUserId();
+        if (userDeleteId == managerId) {
+            return "You can't delete YourSelf";
+        }
+        userGroupChatRepository.deleteByUserIdAndGroupId(
+                userDeleteId,
+                groupChatDeleteMemberInput.getGroupId()
+        );
+        return "Success";
+
         // token.id = managerId => thi ms thuc hien
         // neu ma manageId == userId => k cho
     }
