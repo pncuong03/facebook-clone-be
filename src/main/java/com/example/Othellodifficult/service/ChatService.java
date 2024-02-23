@@ -1,16 +1,15 @@
 package com.example.Othellodifficult.service;
 
 import com.example.Othellodifficult.dto.groupchat.*;
-import com.example.Othellodifficult.entity.GroupChatEntity;
+import com.example.Othellodifficult.entity.ChatEntity;
 import com.example.Othellodifficult.entity.UserEntity;
 import com.example.Othellodifficult.entity.UserGroupChatEntity;
 import com.example.Othellodifficult.mapper.GroupChatMapper;
-import com.example.Othellodifficult.repository.GroupChatRepository;
+import com.example.Othellodifficult.repository.ChatRepository;
 import com.example.Othellodifficult.repository.UserGroupChatRepository;
 import com.example.Othellodifficult.repository.UserRepository;
 import com.example.Othellodifficult.token.TokenHelper;
 import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -19,25 +18,25 @@ import java.util.List;
 
 @Service
 @AllArgsConstructor
-public class GroupChatService {
+public class ChatService {
     private final GroupChatMapper groupChatMapper;
-    private final GroupChatRepository groupChatRepository;
+    private final ChatRepository chatRepository;
     private final UserGroupChatRepository userGroupChatRepository;
     private final UserRepository userRepository;
 
     @Transactional
     public void create(GroupChatInput groupChatInput, String token) {
         Long managerId = TokenHelper.getUserIdFromToken(token);
-        GroupChatEntity groupChatEntity = groupChatMapper.getEntityFromInput(groupChatInput);
+        ChatEntity chatEntity = groupChatMapper.getEntityFromInput(groupChatInput);
 
-        groupChatEntity.setManagerId(managerId);
+        chatEntity.setManagerId(managerId);
 
-        groupChatRepository.save(groupChatEntity);
+        chatRepository.save(chatEntity);
 
         userGroupChatRepository.save(
                 UserGroupChatEntity.builder()
                         .userId(managerId)
-                        .groupId(groupChatEntity.getId())
+                        .groupId(chatEntity.getId())
                         .build()
         );
 
@@ -45,7 +44,7 @@ public class GroupChatService {
             userGroupChatRepository.save(
                     UserGroupChatEntity.builder()
                             .userId(userId)
-                            .groupId(groupChatEntity.getId())
+                            .groupId(chatEntity.getId())
                             .build()
             );
         }
@@ -55,8 +54,8 @@ public class GroupChatService {
     public List<GroupChatMemberOutPut> getGroupChatMember(Long groupId) {
         // get  managerId
         List<UserGroupChatEntity> listUserGroupChatEntity = userGroupChatRepository.findAllByGroupId(groupId);
-        GroupChatEntity groupChatEntity = groupChatRepository.findById(groupId).get();
-        Long managerId = groupChatEntity.getManagerId();
+        ChatEntity chatEntity = chatRepository.findById(groupId).get();
+        Long managerId = chatEntity.getManagerId();
         // get infor member
         List<UserEntity> listUserEntity = new ArrayList<>();
         for (UserGroupChatEntity user : listUserGroupChatEntity) {
@@ -126,7 +125,7 @@ public class GroupChatService {
 
     public String deleteMember(String token, GroupChatDeleteMemberInput groupChatDeleteMemberInput) {
         Long checkUserId = TokenHelper.getUserIdFromToken(token);
-        Long managerId = groupChatRepository
+        Long managerId = chatRepository
                 .findById(groupChatDeleteMemberInput.getGroupId())
                 .get().getManagerId();
         if (checkUserId != managerId) {
@@ -165,7 +164,7 @@ public class GroupChatService {
                     groupChatLeaveTheGroupInput.getUserId(),
                     groupChatLeaveTheGroupInput.getGroupId()
             );
-            groupChatRepository.deleteById(groupChatLeaveTheGroupInput.getGroupId());
+            chatRepository.deleteById(groupChatLeaveTheGroupInput.getGroupId());
         }
 
     }

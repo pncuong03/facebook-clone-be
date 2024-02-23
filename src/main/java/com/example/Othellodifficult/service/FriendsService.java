@@ -1,7 +1,9 @@
 package com.example.Othellodifficult.service;
 
+import com.example.Othellodifficult.entity.FriendMapEntity;
 import com.example.Othellodifficult.entity.FriendRequestEntity;
 import com.example.Othellodifficult.entity.UserEntity;
+import com.example.Othellodifficult.repository.FriendMapRepository;
 import com.example.Othellodifficult.repository.FriendRequestReposiroty;
 import com.example.Othellodifficult.repository.UserRepository;
 import com.example.Othellodifficult.token.TokenHelper;
@@ -18,7 +20,7 @@ import java.util.stream.Collectors;
 public class FriendsService {
     private final FriendRequestReposiroty friendRequestReposiroty;
     private final UserRepository userRepository;
-
+    private final FriendMapRepository friendMapRepository;
     @Transactional
     public void sendRequestAddFriend(Long receiveId, String token) {
         // If the user is already the friends, then can't send the request-- not done
@@ -37,8 +39,16 @@ public class FriendsService {
     }
 
     @Transactional
-    public void acceptAddFriendRequest(String token, Long friendId) {
+    public void acceptAddFriendRequest(Long friendId, String token) {
         Long sendId = TokenHelper.getUserIdFromToken(token);
-        // accept then delte table friendRequest
+        // accept then delte table friendRequests
+        friendMapRepository.save(FriendMapEntity.builder()
+                .userId_1(sendId)
+                .userId_2(friendId)
+                .build()
+        );
+        /* When Accept the request, tokenId is a receiverId when send add friend request,
+        so need to reverse */
+        friendRequestReposiroty.deleteBySenderIdAndReceiverId(friendId,sendId);
     }
 }

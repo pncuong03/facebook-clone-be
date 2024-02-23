@@ -9,8 +9,12 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 public class FriendController {
     private final FriendsService friendsService;
-    @PostMapping()
+    @PostMapping("/add-friend")
     public void sendRequestAddFriends(@RequestParam Long id, @RequestHeader("Authorization") String accessToken){
         friendsService.sendRequestAddFriend(id, accessToken);
+    }
+    @PostMapping("/accept")
+    public void acceptAddFriendRequest(@RequestParam Long id, @RequestHeader("Authorization") String accessToken){
+        friendsService.acceptAddFriendRequest(id, accessToken);
     }
 }

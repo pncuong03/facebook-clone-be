@@ -14,6 +14,7 @@ import javax.persistence.*;
 public class FriendMapEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long userId1;
-    private Long userId2;
+    private Long id;
+    private Long userId_1;
+    private Long userId_2;
 }

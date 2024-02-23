@@ -11,10 +11,12 @@ import javax.persistence.*;
 @Entity
 @Builder
 @Table(name = "tbl_group_chat")
-public class GroupChatEntity {
+public class ChatEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
     private Long managerId;
+    private String type;
+    private String newestChatTime;
 }
