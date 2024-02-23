@@ -3,6 +3,7 @@ package com.example.Othellodifficult.entity;
 import lombok.*;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @AllArgsConstructor
@@ -19,6 +20,5 @@ public class FriendRequestEntity {
     private Long senderId;
     private Long receiverId;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date createdAt;
+    private LocalDateTime createdAt;
 }
