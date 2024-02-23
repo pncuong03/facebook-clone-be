@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 @Repository
-public interface UserGroupChatRepository extends JpaRepository<UserGroupChatEntity,Long> {
+public interface UserGroupChatRepository extends JpaRepository<UserGroupChatEntity, Long> {
     List<UserGroupChatEntity> findAllByGroupId(Long groupId);
     void deleteByUserIdAndGroupId(Long userId,Long groupId);
     Long countByGroupId(Long groupId);
