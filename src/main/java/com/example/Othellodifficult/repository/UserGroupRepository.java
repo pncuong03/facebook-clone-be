@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface UserGroupRepository extends JpaRepository<UserGroupEntity,Long> {
+public interface UserGroupRepository extends JpaRepository<UserGroupEntity, Long> {
     List<UserGroupEntity> findAllByGroupId(Long groupId);
     void deleteByUserIdAndGroupId(Long userId,Long groupId);
     Long countByGroupId(Long groupId);
