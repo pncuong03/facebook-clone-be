@@ -10,8 +10,8 @@ import javax.persistence.*;
 @NoArgsConstructor
 @Entity
 @Builder
-@Table(name = "tbl_user_group_chat")
-public class UserGroupChatEntity {
+@Table(name = "tbl_user_chat")
+public class UserChatEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

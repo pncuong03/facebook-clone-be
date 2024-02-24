@@ -1,16 +1,13 @@
 package com.example.Othellodifficult.service;
 
-import com.example.Othellodifficult.entity.FriendMapEntity;
-import com.example.Othellodifficult.entity.FriendRequestEntity;
-import com.example.Othellodifficult.entity.UserEntity;
-import com.example.Othellodifficult.repository.FriendMapRepository;
-import com.example.Othellodifficult.repository.FriendRequestReposiroty;
-import com.example.Othellodifficult.repository.UserRepository;
+import com.example.Othellodifficult.entity.*;
+import com.example.Othellodifficult.repository.*;
 import com.example.Othellodifficult.token.TokenHelper;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,6 +18,9 @@ public class FriendsService {
     private final FriendRequestReposiroty friendRequestReposiroty;
     private final UserRepository userRepository;
     private final FriendMapRepository friendMapRepository;
+    private final ChatRepository chatRepository;
+    private final UserChatRepository userChatRepository;
+
     @Transactional
     public void sendRequestAddFriend(Long receiveId, String token) {
         // If the user is already the friends, then can't send the request-- not done
@@ -33,7 +33,7 @@ public class FriendsService {
         FriendRequestEntity friendRequestEntity = FriendRequestEntity.builder()
                 .senderId(senderId)
                 .receiverId(receiveId)
-                .createdAt(new Date())
+                .createdAt(LocalDateTime.now())
                 .build();
         friendRequestReposiroty.save(friendRequestEntity);
     }
@@ -49,6 +49,23 @@ public class FriendsService {
         );
         /* When Accept the request, tokenId is a receiverId when send add friend request,
         so need to reverse */
-        friendRequestReposiroty.deleteBySenderIdAndReceiverId(friendId,sendId);
+        friendRequestReposiroty.deleteBySenderIdAndReceiverId(friendId, sendId);
+        ChatEntity chatEntity = ChatEntity.builder()
+                .name("chat" + friendId + "-" + sendId)
+                .managerId(null)
+                .newestChatTime(null)
+                .chatType("user")
+                .build();
+        chatRepository.save(chatEntity);
+        userChatRepository.save(UserChatEntity.builder()
+                .groupId(chatEntity.getId())
+                .userId(sendId)
+                .build()
+        );
+        userChatRepository.save(UserChatEntity.builder()
+                .groupId(chatEntity.getId())
+                .userId(friendId)
+                .build()
+        );
     }
 }

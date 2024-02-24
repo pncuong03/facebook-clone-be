@@ -1,6 +1,6 @@
 package com.example.Othellodifficult.controller;
 
-import com.example.Othellodifficult.dto.groupchat.*;
+import com.example.Othellodifficult.dto.chat.*;
 import com.example.Othellodifficult.service.ChatService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -13,25 +13,25 @@ import java.util.List;
 public class ChatController {
     private final ChatService chatService;
     @PostMapping
-    public void create(@RequestBody GroupChatInput groupChatInput, @RequestHeader("Authorization") String accessToken){
-        chatService.create(groupChatInput, accessToken);
+    public void create(@RequestBody ChatInput chatInput, @RequestHeader("Authorization") String accessToken){
+        chatService.create(chatInput, accessToken);
     }
     @GetMapping("/{id}")
-    public List<GroupChatMemberOutPut> getGroupMemBer(@PathVariable(value = "id") Long groupId){
+    public List<ChatMemberOutput> getGroupMemBer(@PathVariable(value = "id") Long groupId){
         return chatService.getGroupChatMember(groupId);
     }
     @PostMapping("/add-new")
-    public String addNewMember(@RequestBody GroupChatAddNewMemberInput groupChatAddNewMemberInput){
-        return chatService.addNewMember(groupChatAddNewMemberInput);
+    public String addNewMember(@RequestBody ChatAddNewMemberInput chatAddNewMemberInput){
+        return chatService.addNewMember(chatAddNewMemberInput);
     }
     @DeleteMapping("/delete-member")
     public String deleteMember(@RequestHeader("Authorization") String accessToken,
-                               @RequestBody GroupChatDeleteMemberInput groupChatDeleteMemberInput)
+                               @RequestBody ChatDeleteMemberInput chatDeleteMemberInput)
     {
-        return chatService.deleteMember(accessToken, groupChatDeleteMemberInput);
+        return chatService.deleteMember(accessToken, chatDeleteMemberInput);
     }
     @DeleteMapping("/leave-group")
-    public void leaveTheGroupChat(@RequestBody GroupChatLeaveTheGroupInput groupChatLeaveTheGroupInput){
-        chatService.leaveTheGroupChat(groupChatLeaveTheGroupInput);
+    public void leaveTheGroupChat(@RequestBody ChatLeaveTheGroupInput chatLeaveTheGroupInput){
+        chatService.leaveTheGroupChat(chatLeaveTheGroupInput);
     }
 }
