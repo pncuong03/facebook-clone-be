@@ -1,6 +1,5 @@
 package com.example.Othellodifficult.repository;
 
-import com.example.Othellodifficult.entity.UserGroupChatEntity;
 import com.example.Othellodifficult.entity.UserGroupEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
