@@ -1,6 +1,7 @@
 package com.example.Othellodifficult.service;
 
 import com.example.Othellodifficult.common.Common;
+import com.example.Othellodifficult.dto.friends.ListFriendOutput;
 import com.example.Othellodifficult.entity.*;
 import com.example.Othellodifficult.repository.*;
 import com.example.Othellodifficult.token.TokenHelper;
@@ -9,8 +10,10 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,30 +43,60 @@ public class FriendsService {
     }
 
     @Transactional
-    public void acceptAddFriendRequest(Long friendId, String token) {
-        Long sendId = TokenHelper.getUserIdFromToken(token);
+    public void acceptAddFriendRequest(Long senderId, String token) {
+        Long receiverId = TokenHelper.getUserIdFromToken(token);
         // accept then delete table friendRequests
         friendMapRepository.save(FriendMapEntity.builder()
-                .userId_1(sendId)
-                .userId_2(friendId)
+                .userId_1(receiverId)
+                .userId_2(senderId)
                 .build()
         );
         /* When Accept the request, tokenId is a receiverId when send add friend request,
         so need to reverse */
-        friendRequestReposiroty.deleteBySenderIdAndReceiverId(friendId, sendId);
+        friendRequestReposiroty.deleteByReceiverIdAndSenderId(receiverId, senderId);
         ChatEntity chatEntity = ChatEntity.builder()
                 .chatType(Common.USER)
                 .build();
         chatRepository.save(chatEntity);
+
         userChatRepository.save(UserChatEntity.builder()
                 .groupId(chatEntity.getId())
-                .userId(sendId)
+                .userId(receiverId)
                 .build()
         );
         userChatRepository.save(UserChatEntity.builder()
                 .groupId(chatEntity.getId())
-                .userId(friendId)
+                .userId(senderId)
                 .build()
         );
+    }
+
+    public void deleteAddFriendRequest(Long sendId, String token ){
+        Long receiveId = TokenHelper.getUserIdFromToken(token);
+        friendRequestReposiroty.deleteByReceiverIdAndSenderId(receiveId,sendId);
+    }
+    public List<ListFriendOutput> getListFriends(String token){
+        Long senderId = TokenHelper.getUserIdFromToken(token);
+        List<FriendMapEntity> listFriendMapEntity = friendMapRepository.findAllByUserId(senderId);
+        List<ListFriendOutput> listFriendOutputs = new ArrayList<>();
+        for(FriendMapEntity friendMapEntity: listFriendMapEntity){
+            Long friendId = null;
+            if(!friendMapEntity.getUserId_1().equals(senderId)){
+                friendId = friendMapEntity.getUserId_1();
+            }else{
+                friendId = friendMapEntity.getUserId_2();
+            }
+            UserEntity userEntity = userRepository.findById(friendId).get();
+            listFriendOutputs.add(ListFriendOutput.builder()
+                    .id(friendMapEntity.getId())
+                            .name(userEntity.getUsername())
+                    .userId(friendId)
+                    .build()
+            );
+        }
+        return listFriendOutputs;
+    }
+    public void deleteFriend(Long chatMapId){
+            friendMapRepository.deleteById(chatMapId);
     }
 }
