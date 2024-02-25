@@ -1,5 +1,6 @@
 package com.example.Othellodifficult.service;
 
+import com.example.Othellodifficult.common.Common;
 import com.example.Othellodifficult.entity.*;
 import com.example.Othellodifficult.repository.*;
 import com.example.Othellodifficult.token.TokenHelper;
@@ -41,7 +42,7 @@ public class FriendsService {
     @Transactional
     public void acceptAddFriendRequest(Long friendId, String token) {
         Long sendId = TokenHelper.getUserIdFromToken(token);
-        // accept then delte table friendRequests
+        // accept then delete table friendRequests
         friendMapRepository.save(FriendMapEntity.builder()
                 .userId_1(sendId)
                 .userId_2(friendId)
@@ -51,10 +52,7 @@ public class FriendsService {
         so need to reverse */
         friendRequestReposiroty.deleteBySenderIdAndReceiverId(friendId, sendId);
         ChatEntity chatEntity = ChatEntity.builder()
-                .name("chat" + friendId + "-" + sendId)
-                .managerId(null)
-                .newestChatTime(null)
-                .chatType("user")
+                .chatType(Common.USER)
                 .build();
         chatRepository.save(chatEntity);
         userChatRepository.save(UserChatEntity.builder()
