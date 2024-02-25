@@ -13,7 +13,7 @@ import java.util.List;
 public class ChatController {
     private final ChatService chatService;
     @PostMapping
-    public void create(@RequestBody ChatInput chatInput, @RequestHeader("Authorization") String accessToken){
+    public void create(@RequestBody ChatInput chatInput, @RequestHeader(value = "Authorization") String accessToken){
         chatService.create(chatInput, accessToken);
     }
     @GetMapping("/{id}")

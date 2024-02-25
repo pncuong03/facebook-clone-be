@@ -15,6 +15,6 @@ public class EventNotificationEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long userId;
-    private String eventType;
+    private Long userId; // phuc = 2
+    private String eventType; // message
 }

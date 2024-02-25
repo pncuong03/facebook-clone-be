@@ -1,7 +1,6 @@
 package com.example.Othellodifficult.entity;
 
 import lombok.*;
-
 import javax.persistence.*;
 
 @Getter
