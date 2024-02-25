@@ -1,7 +1,5 @@
 package com.example.Othellodifficult.service;
 import com.example.Othellodifficult.dto.group.*;
-import com.example.Othellodifficult.dto.groupchat.GroupChatDeleteMemberInput;
-import com.example.Othellodifficult.dto.groupchat.GroupChatLeaveTheGroupInput;
 import com.example.Othellodifficult.entity.GroupEntity;
 import com.example.Othellodifficult.entity.UserEntity;
 import com.example.Othellodifficult.entity.UserGroupEntity;

@@ -1,4 +1,4 @@
-package com.example.Othellodifficult.dto.groupchat;
+package com.example.Othellodifficult.dto.chat;
 
 import lombok.*;
 
@@ -9,7 +9,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class GroupChatAddNewMemberInput {
+public class ChatAddNewMemberInput {
     private Long groupId;
     private List<Long> listUserId;
 }

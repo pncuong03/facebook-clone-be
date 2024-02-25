@@ -1,4 +1,4 @@
-package com.example.Othellodifficult.dto.groupchat;
+package com.example.Othellodifficult.dto.chat;
 
 import lombok.*;
 
@@ -7,7 +7,7 @@ import lombok.*;
 @Getter
 @Setter
 @Builder
-public class GroupChatMemberOutPut {
+public class ChatMemberOutput {
     private Long id;
     private String username;
     private String image;

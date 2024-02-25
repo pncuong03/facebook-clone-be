@@ -1,10 +1,6 @@
 package com.example.Othellodifficult.controller;
 
 import com.example.Othellodifficult.dto.group.*;
-import com.example.Othellodifficult.dto.groupchat.GroupChatAddNewMemberInput;
-import com.example.Othellodifficult.dto.groupchat.GroupChatDeleteMemberInput;
-import com.example.Othellodifficult.dto.groupchat.GroupChatLeaveTheGroupInput;
-import com.example.Othellodifficult.dto.groupchat.GroupChatMemberOutPut;
 import com.example.Othellodifficult.service.GroupService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
