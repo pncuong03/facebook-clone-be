@@ -1,13 +1,11 @@
 package com.example.Othellodifficult.controller;
 
-import com.example.Othellodifficult.dto.friends.ListFriendOutput;
+import com.example.Othellodifficult.dto.friends.FriendPerPageOutput;
 import com.example.Othellodifficult.service.FriendsService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("api/v1/friend")
@@ -27,9 +25,9 @@ public class FriendController {
 
     @Operation(summary = "Get all list friends")
     @GetMapping("/get-list")
-    Page <ListFriendOutput> getListFriends(@RequestHeader("Authorization") String accessToken,
-                                           @RequestParam int pageNumber) {
-        return friendsService.getListFriends(accessToken,pageNumber);
+    Page <FriendPerPageOutput> getFriendsOnePage(@RequestHeader("Authorization") String accessToken,
+                                                 @RequestParam int pageNumber) {
+        return friendsService.getFriendPerPage(accessToken,pageNumber);
     }
 
     @Operation(summary = "Delete friend ")
