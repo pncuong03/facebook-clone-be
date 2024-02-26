@@ -1,4 +1,4 @@
-package com.example.Othellodifficult.entity;
+package com.example.Othellodifficult.entity.friend;
 
 import lombok.*;
 

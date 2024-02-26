@@ -4,6 +4,7 @@ import com.example.Othellodifficult.dto.friends.ListFriendOutput;
 import com.example.Othellodifficult.service.FriendsService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,11 +27,20 @@ public class FriendController {
 
     @Operation(summary = "Get all list friends")
     @GetMapping("/get-list")
-    public List<ListFriendOutput> getListFriends(@RequestHeader("Authorization") String accessToken) {
-        return friendsService.getListFriends(accessToken);
+    Page <ListFriendOutput> getListFriends(@RequestHeader("Authorization") String accessToken,
+                                           @RequestParam int pageNumber) {
+        return friendsService.getListFriends(accessToken,pageNumber);
     }
+
     @Operation(summary = "Delete friend ")
-    @DeleteMapping void deleteFriends(@RequestParam Long chatMapId){
+    @DeleteMapping
+    void deleteFriends(@RequestParam Long chatMapId){
         friendsService.deleteFriend(chatMapId);
+    }
+
+    @Operation(summary = "delete add friend request")
+    @DeleteMapping("/delete-request")
+    void deleteAddFriendRequest(@RequestParam Long senderId, @RequestHeader String accessToken){
+        friendsService.deleteAddFriendRequest(senderId,accessToken);
     }
 }

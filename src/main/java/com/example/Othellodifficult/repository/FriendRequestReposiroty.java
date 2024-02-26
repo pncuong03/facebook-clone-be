@@ -1,6 +1,6 @@
 package com.example.Othellodifficult.repository;
 
-import com.example.Othellodifficult.entity.FriendRequestEntity;
+import com.example.Othellodifficult.entity.friend.FriendRequestEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

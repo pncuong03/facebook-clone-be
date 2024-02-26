@@ -3,17 +3,21 @@ package com.example.Othellodifficult.service;
 import com.example.Othellodifficult.common.Common;
 import com.example.Othellodifficult.dto.friends.ListFriendOutput;
 import com.example.Othellodifficult.entity.*;
+import com.example.Othellodifficult.entity.friend.FriendMapEntity;
+import com.example.Othellodifficult.entity.friend.FriendRequestEntity;
 import com.example.Othellodifficult.repository.*;
 import com.example.Othellodifficult.token.TokenHelper;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -75,9 +79,10 @@ public class FriendsService {
         Long receiveId = TokenHelper.getUserIdFromToken(token);
         friendRequestReposiroty.deleteByReceiverIdAndSenderId(receiveId,sendId);
     }
-    public List<ListFriendOutput> getListFriends(String token){
+    public Page<ListFriendOutput> getListFriends(String token, int pageNum){
+        Pageable pageable = PageRequest.of(pageNum -1, 3);
         Long senderId = TokenHelper.getUserIdFromToken(token);
-        List<FriendMapEntity> listFriendMapEntity = friendMapRepository.findAllByUserId(senderId);
+        Page<FriendMapEntity> listFriendMapEntity = friendMapRepository.findAllByUserId(senderId,pageable);
         List<ListFriendOutput> listFriendOutputs = new ArrayList<>();
         for(FriendMapEntity friendMapEntity: listFriendMapEntity){
             Long friendId = null;
@@ -94,7 +99,7 @@ public class FriendsService {
                     .build()
             );
         }
-        return listFriendOutputs;
+        return new PageImpl<>(listFriendOutputs,pageable,listFriendMapEntity.getTotalElements());
     }
     public void deleteFriend(Long chatMapId){
             friendMapRepository.deleteById(chatMapId);
