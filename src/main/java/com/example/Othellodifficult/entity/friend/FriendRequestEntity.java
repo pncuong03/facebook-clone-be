@@ -1,10 +1,9 @@
-package com.example.Othellodifficult.entity;
+package com.example.Othellodifficult.entity.friend;
 
 import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @AllArgsConstructor
 @NoArgsConstructor

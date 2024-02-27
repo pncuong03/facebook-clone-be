@@ -1,5 +1,6 @@
 package com.example.Othellodifficult.service;
 
+import com.example.Othellodifficult.common.Common;
 import com.example.Othellodifficult.dto.chat.*;
 import com.example.Othellodifficult.entity.ChatEntity;
 import com.example.Othellodifficult.entity.UserEntity;
@@ -32,7 +33,7 @@ public class ChatService {
 
         chatEntity.setManagerId(managerId);
         chatEntity.setNewestChatTime(LocalDateTime.now());
-        chatEntity.setChatType("group");
+        chatEntity.setChatType(Common.GROUP);
 
         chatRepository.save(chatEntity);
 
