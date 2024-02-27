@@ -10,6 +10,6 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class ChatAddNewMemberInput {
-    private Long groupId;
-    private List<Long> listUserId;
+    private Long groupChatId;
+    private List<Long> userIds;
 }

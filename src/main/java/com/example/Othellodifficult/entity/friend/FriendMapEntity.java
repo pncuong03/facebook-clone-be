@@ -1,7 +1,6 @@
 package com.example.Othellodifficult.entity.friend;
 
 import lombok.*;
-
 import javax.persistence.*;
 
 @AllArgsConstructor
@@ -15,6 +14,8 @@ public class FriendMapEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long userId_1;
-    private Long userId_2;
+    @Column(name = "user_id_1")
+    private Long userId1;
+    @Column(name = "user_id_2")
+    private Long userId2;
 }

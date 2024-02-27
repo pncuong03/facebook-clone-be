@@ -3,7 +3,7 @@ package com.example.Othellodifficult.service;
 import com.example.Othellodifficult.common.Common;
 import com.example.Othellodifficult.dto.message.MessageInput;
 import com.example.Othellodifficult.entity.ChatEntity;
-import com.example.Othellodifficult.entity.UserChatEntity;
+import com.example.Othellodifficult.entity.UserChatMapEntity;
 import com.example.Othellodifficult.entity.message.EventNotificationEntity;
 import com.example.Othellodifficult.entity.message.MessageEntity;
 import com.example.Othellodifficult.mapper.MessageMapper;
@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -45,11 +44,11 @@ public class MessageService {
             chatEntity.setNewestChatTime(LocalDateTime.now());
             chatRepository.save(chatEntity);
 
-            List<UserChatEntity> userChatEntities = userChatRepository.findAllByGroupId(messageInput.getChatId()).stream()
+            List<UserChatMapEntity> userChatEntities = userChatRepository.findAllByChatId(messageInput.getChatId()).stream()
                     .filter(userChatEntity -> !userChatEntity.getUserId().equals(senderId))
                     .collect(Collectors.toList());
             if (!userChatEntities.isEmpty()){
-                for (UserChatEntity userChatEntity : userChatEntities){
+                for (UserChatMapEntity userChatEntity : userChatEntities){
                     eventNotificationRepository.save(
                             EventNotificationEntity.builder()
                                     .eventType(Common.MESSAGE)

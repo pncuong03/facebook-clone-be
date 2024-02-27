@@ -11,6 +11,6 @@ import java.util.List;
 
 @Repository
 public interface FriendMapRepository extends JpaRepository<FriendMapEntity, Long> {
-    @Query(value = "select u from FriendMapEntity u where u.userId_1 = :userId or u.userId_2 = :userId")
+    @Query(value = "select u from FriendMapEntity u where u.userId1 = :userId or u.userId2 = :userId")
     Page<FriendMapEntity> findAllByUserId(Long userId, Pageable pageable);
 }

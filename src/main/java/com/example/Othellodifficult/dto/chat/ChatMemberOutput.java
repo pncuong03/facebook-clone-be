@@ -9,7 +9,7 @@ import lombok.*;
 @Builder
 public class ChatMemberOutput {
     private Long id;
-    private String username;
-    private String image;
-    private String positionInGroup;
+    private String fullName;
+    private String imageUrl;
+    private String role;
 }

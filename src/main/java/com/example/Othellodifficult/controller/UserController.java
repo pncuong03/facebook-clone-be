@@ -1,5 +1,6 @@
 package com.example.Othellodifficult.controller;
 
+import com.example.Othellodifficult.dto.user.ChangeInfoUserRequest;
 import com.example.Othellodifficult.dto.user.TokenResponse;
 import com.example.Othellodifficult.dto.user.UserRequest;
 import com.example.Othellodifficult.entity.UserEntity;
@@ -19,6 +20,12 @@ import javax.validation.Valid;
 @CrossOrigin
 public class UserController {
     private final UserService userService;
+
+    @PostMapping("/change-user-information")
+    public void changeUserInformation(@RequestBody @Valid ChangeInfoUserRequest changeInfoUserRequest,
+                                      @RequestHeader(value = "Authorization") String accessToken){
+        userService.changeUserInformation(changeInfoUserRequest, accessToken);
+    }
 
     @Operation(summary = "Đăng ký tài khoản")
     @PostMapping("sign-up")

@@ -8,6 +8,6 @@ import lombok.*;
 @Setter
 @Builder
 public class ChatDeleteMemberInput {
-    private Long groupId;
+    private Long groupChatId;
     private Long userId;
 }

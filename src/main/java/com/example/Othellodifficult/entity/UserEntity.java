@@ -3,6 +3,7 @@ package com.example.Othellodifficult.entity;
 import lombok.*;
 
 import javax.persistence.*;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "tbl_user")
@@ -17,4 +18,8 @@ public class UserEntity {
     private Long id;
     private String username;
     private String password;
+    private String fullName;
+    private String imageUrl;
+    private OffsetDateTime birthday;
+    private String gender;
 }

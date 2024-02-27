@@ -5,13 +5,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.validation.constraints.NotEmpty;
 import java.util.List;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ChatInput {
+public class CreateGroupChatInput {
+    @NotEmpty
     private String name;
-    private List<Long> userId;
+    @NotEmpty
+    private List<Long> userIds;
 }

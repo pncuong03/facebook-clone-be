@@ -1,17 +1,14 @@
 package com.example.Othellodifficult.repository;
 
-import com.example.Othellodifficult.entity.UserChatEntity;
+import com.example.Othellodifficult.entity.UserChatMapEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
 import java.util.List;
+
 @Repository
-public interface UserChatRepository extends JpaRepository<UserChatEntity, Long> {
-    List<UserChatEntity> findAllByGroupId(Long groupId);
-    void deleteByUserIdAndGroupId(Long userId,Long groupId);
-    Long countByGroupId(Long groupId);
-//    @Query(
-//            Select u. from UserEntity
-//    )
-//    List<Long> listUserId findAllUserIdBy(Long groupId);
+public interface UserChatRepository extends JpaRepository<UserChatMapEntity, Long> {
+    List<UserChatMapEntity> findAllByChatId(Long groupId);
+    void deleteByUserIdAndChatId(Long userId,Long groupId);
+    Long countByChatId(Long groupId);
+    Boolean existsByUserIdAndChatId(Long userId, Long chatId);
 }

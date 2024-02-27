@@ -4,7 +4,7 @@ import com.example.Othellodifficult.common.Common;
 import com.example.Othellodifficult.dto.chat.*;
 import com.example.Othellodifficult.entity.ChatEntity;
 import com.example.Othellodifficult.entity.UserEntity;
-import com.example.Othellodifficult.entity.UserChatEntity;
+import com.example.Othellodifficult.entity.UserChatMapEntity;
 import com.example.Othellodifficult.mapper.ChatMapper;
 import com.example.Othellodifficult.repository.ChatRepository;
 import com.example.Othellodifficult.repository.UserChatRepository;
@@ -12,24 +12,35 @@ import com.example.Othellodifficult.repository.UserRepository;
 import com.example.Othellodifficult.token.TokenHelper;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 public class ChatService {
     private final ChatMapper chatMapper;
     private final ChatRepository chatRepository;
-    private final UserChatRepository userChatRepository;
+    private final UserChatRepository userChatMapRepository;
     private final UserRepository userRepository;
 
+    private ChatEntity detail(Long chatId) {
+        return chatRepository.findById(chatId).orElseThrow(
+                () -> new RuntimeException(Common.RECORD_NOT_FOUND)
+        );
+    }
+
     @Transactional
-    public void create(ChatInput chatInput, String token) {
-        Long managerId = TokenHelper.getUserIdFromToken(token);
-        ChatEntity chatEntity = chatMapper.getEntityFromInput(chatInput);
+    public void createGroupChat(CreateGroupChatInput createGroupChatInput, String accessToken) {
+        Long managerId = TokenHelper.getUserIdFromToken(accessToken);
+        if (createGroupChatInput.getUserIds().contains(managerId)) {
+            throw new RuntimeException(Common.ACTION_FAIL);
+        }
+        ChatEntity chatEntity = chatMapper.getEntityFromInput(createGroupChatInput);
 
         chatEntity.setManagerId(managerId);
         chatEntity.setNewestChatTime(LocalDateTime.now());
@@ -37,139 +48,127 @@ public class ChatService {
 
         chatRepository.save(chatEntity);
 
-        userChatRepository.save(
-                UserChatEntity.builder()
+        userChatMapRepository.save(
+                UserChatMapEntity.builder()
                         .userId(managerId)
-                        .groupId(chatEntity.getId())
+                        .chatId(chatEntity.getId())
                         .build()
         );
 
-        for (Long userId : chatInput.getUserId()) {
-            userChatRepository.save(
-                    UserChatEntity.builder()
+        for (Long userId : createGroupChatInput.getUserIds()) {
+            userChatMapRepository.save(
+                    UserChatMapEntity.builder()
                             .userId(userId)
-                            .groupId(chatEntity.getId())
+                            .chatId(chatEntity.getId())
                             .build()
             );
         }
-
     }
 
-    public List<ChatMemberOutput> getGroupChatMember(Long groupId) {
-        // get  managerId
-        List<UserChatEntity> listUserChatEntity = userChatRepository.findAllByGroupId(groupId);
-        ChatEntity chatEntity = chatRepository.findById(groupId).get();
-        Long managerId = chatEntity.getManagerId();
-        // get infor member
-        List<UserEntity> listUserEntity = new ArrayList<>();
-        for (UserChatEntity user : listUserChatEntity) {
-            UserEntity userEntity = userRepository.findById(user.getUserId()).get();
-            listUserEntity.add(userEntity);
+    @Transactional(readOnly = true)
+    public List<ChatMemberOutput> getGroupChatMembersBy(Long groupChatId, String accessToken) {
+        Long userId = TokenHelper.getUserIdFromToken(accessToken);
+        if (Boolean.FALSE.equals(userChatMapRepository.existsByUserIdAndChatId(userId, groupChatId))) {
+            throw new RuntimeException(Common.ACTION_FAIL);
         }
-        // map to output
-        List<ChatMemberOutput> groupMemberOutPutList = new ArrayList<>();
-        for (UserEntity user : listUserEntity) {
-            if (user.getId() == managerId) {
-                groupMemberOutPutList.add(
+
+        List<UserChatMapEntity> userChatEntities = userChatMapRepository.findAllByChatId(groupChatId);
+        ChatEntity chatEntity = detail(groupChatId);
+        Long managerId = chatEntity.getManagerId();
+
+        List<UserEntity> userEntities = userRepository.findAllByIdIn(
+                userChatEntities.stream().map(UserChatMapEntity::getId).collect(Collectors.toList())
+        );
+
+        List<ChatMemberOutput> groupMemberOutputs = new ArrayList<>();
+        for (UserEntity user : userEntities) {
+            if (Objects.equals(user.getId(), managerId)) {
+                groupMemberOutputs.add(
                         ChatMemberOutput.builder()
                                 .id(user.getId())
-                                .username(user.getUsername())
-                                .image(null)
-                                .positionInGroup("Admin")
+                                .fullName(user.getFullName())
+                                .imageUrl(user.getImageUrl())
+                                .role(Common.ADMIN)
                                 .build()
                 );
             } else {
-                groupMemberOutPutList.add(
+                groupMemberOutputs.add(
                         ChatMemberOutput.builder()
                                 .id(user.getId())
-                                .username(user.getUsername())
-                                .image(null)
-                                .positionInGroup("MemBer")
+                                .fullName(user.getFullName())
+                                .imageUrl(user.getImageUrl())
+                                .role(Common.MEMBER)
                                 .build()
                 );
             }
-
         }
-        return groupMemberOutPutList;
+        return groupMemberOutputs;
     }
 
-    public String addNewMember(ChatAddNewMemberInput chatAddNewMemberInput) {
-        /*   get all userId from UserGroupChat, compare userId from Input,
-            if it not exits then save new in UserGroupChat
-            Can return a string("Add new successfully") if it success, or return
-            string("The user is already in Group") if it doesn't*/
-        List<UserChatEntity> listUserChatEntity = userChatRepository
-                .findAllByGroupId(
-                        chatAddNewMemberInput.getGroupId()
-                );
-        List<Long> listUserIdExitInGroup = new ArrayList<>();
-        for (UserChatEntity userGroup : listUserChatEntity) {
-            listUserIdExitInGroup.add(userRepository.findById(
-                    userGroup.getUserId()
-            ).get().getId());
+    @Transactional
+    public void addNewMemberToGroupChat(ChatAddNewMemberInput chatAddNewMemberInput, String accessToken) {
+        ChatEntity chatEntity = chatRepository.findById(chatAddNewMemberInput.getGroupChatId()).get();
+        if (!Objects.equals(chatEntity.getManagerId(), TokenHelper.getUserIdFromToken(accessToken))) {
+            throw new RuntimeException(Common.ACTION_FAIL);
         }
-        for (Long newUserId : chatAddNewMemberInput.getListUserId()) {
-            if (!listUserIdExitInGroup.contains(newUserId)) {
-                userChatRepository.save(
-                        UserChatEntity.builder()
-                                .groupId(chatAddNewMemberInput.getGroupId())
+
+        List<UserChatMapEntity> userChatMapEntities =
+                userChatMapRepository.findAllByChatId(chatAddNewMemberInput.getGroupChatId());
+
+        List<Long> userIdsInGroup = userChatMapEntities.stream()
+                .map(UserChatMapEntity::getUserId)
+                .collect(Collectors.toList());
+
+        for (Long newUserId : chatAddNewMemberInput.getUserIds()) {
+            if (!userIdsInGroup.contains(newUserId)) {
+                userChatMapRepository.save(
+                        UserChatMapEntity.builder()
+                                .chatId(chatAddNewMemberInput.getGroupChatId())
                                 .userId(newUserId)
                                 .build()
                 );
             } else {
-                return "The User is already in Group";
-
+                throw new RuntimeException(Common.ACTION_FAIL);
             }
         }
-        return "Add new Users successfull";
-        //
     }
 
     @Transactional
-
-    public String deleteMember(String token, ChatDeleteMemberInput chatDeleteMemberInput) {
-        Long checkUserId = TokenHelper.getUserIdFromToken(token);
-        Long managerId = chatRepository
-                .findById(chatDeleteMemberInput.getGroupId())
-                .get().getManagerId();
-        if (checkUserId != managerId) {
-            return "You can't delete the others people";
+    public void deleteMember(String accessToken, ChatDeleteMemberInput chatDeleteMemberInput) {
+        ChatEntity chatEntity = chatRepository.findById(chatDeleteMemberInput.getGroupChatId()).get();
+        Long userId = TokenHelper.getUserIdFromToken(accessToken);
+        if (!Objects.equals(chatEntity.getManagerId(), userId)) {
+            throw new RuntimeException(Common.ACTION_FAIL);
         }
 
-        Long userDeleteId = chatDeleteMemberInput.getUserId();
-        if (userDeleteId == managerId) {
-            return "You can't delete YourSelf";
+//        Long checkUserId = TokenHelper.getUserIdFromToken(accessToken);
+//        Long managerId = chatRepository.findById(chatDeleteMemberInput.getGroupChatId()).get().getManagerId();
+//        if (!Objects.equals(checkUserId, managerId)) {
+//            throw new RuntimeException(Common.ACTION_FAIL);
+//        }
+
+        if (Objects.equals(chatDeleteMemberInput.getUserId(), userId)) {
+            throw new RuntimeException(Common.ACTION_FAIL);
         }
-        userChatRepository.deleteByUserIdAndGroupId(
-                userDeleteId,
-                chatDeleteMemberInput.getGroupId()
+        userChatMapRepository.deleteByUserIdAndChatId(
+                chatDeleteMemberInput.getUserId(),
+                chatDeleteMemberInput.getGroupChatId()
         );
-        return "Success";
-
-        // token.id = managerId => thi ms thuc hien
-        // neu ma manageId == userId => k cho
     }
 
     @Transactional
     public void leaveTheGroupChat(ChatLeaveTheGroupInput chatLeaveTheGroupInput) {
-         /* Need to check the position of managerGroup, if the manager leave,
-        he will need to transfer his role to another
-     */
-        if (userChatRepository.countByGroupId(
-                chatLeaveTheGroupInput.getGroupId()) > 1) // check the number of row in table UserGroupChat
-        {
-            userChatRepository.deleteByUserIdAndGroupId(
+        if (userChatMapRepository.countByChatId(chatLeaveTheGroupInput.getGroupId()) > 1) {
+            userChatMapRepository.deleteByUserIdAndChatId(
                     chatLeaveTheGroupInput.getUserId(),
                     chatLeaveTheGroupInput.getGroupId()
             );
         } else {
-            // delte the last member in UserGroupChat table and delete immidiately table GroupChat with groupId
-            userChatRepository.deleteByUserIdAndGroupId(
+            userChatMapRepository.deleteByUserIdAndChatId(
                     chatLeaveTheGroupInput.getUserId(),
                     chatLeaveTheGroupInput.getGroupId()
             );
             chatRepository.deleteById(chatLeaveTheGroupInput.getGroupId());
         }
-
     }
 }
