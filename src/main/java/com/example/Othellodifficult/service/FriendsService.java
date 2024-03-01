@@ -1,7 +1,7 @@
 package com.example.Othellodifficult.service;
 
 import com.example.Othellodifficult.common.Common;
-import com.example.Othellodifficult.dto.friends.FriendPerPageOutput;
+import com.example.Othellodifficult.dto.friends.FriendRequestOutput;
 import com.example.Othellodifficult.entity.*;
 import com.example.Othellodifficult.entity.friend.FriendMapEntity;
 import com.example.Othellodifficult.entity.friend.FriendRequestEntity;
@@ -9,20 +9,20 @@ import com.example.Othellodifficult.repository.*;
 import com.example.Othellodifficult.token.TokenHelper;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 public class FriendsService {
-    private final FriendRequestReposiroty friendRequestReposiroty;
+    private final FriendRequestRepository friendRequestRepository;
     private final UserRepository userRepository;
     private final FriendMapRepository friendMapRepository;
     private final ChatRepository chatRepository;
@@ -39,13 +39,13 @@ public class FriendsService {
                 .receiverId(receiveId)
                 .createdAt(LocalDateTime.now())
                 .build();
-        friendRequestReposiroty.save(friendRequestEntity);
+        friendRequestRepository.save(friendRequestEntity);
     }
 
     @Transactional
     public void acceptAddFriendRequest(Long senderId, String token) {
         Long receiverId = TokenHelper.getUserIdFromToken(token);
-        if (Boolean.FALSE.equals(friendRequestReposiroty.existsBySenderIdAndReceiverId(senderId, receiverId))) {
+        if (Boolean.FALSE.equals(friendRequestRepository.existsBySenderIdAndReceiverId(senderId, receiverId))) {
             throw new RuntimeException(Common.ACTION_FAIL);
         }
 
@@ -55,55 +55,86 @@ public class FriendsService {
                 .build()
         );
 
-        friendRequestReposiroty.deleteByReceiverIdAndSenderId(receiverId, senderId);
+        friendRequestRepository.deleteByReceiverIdAndSenderId(receiverId, senderId);
 
-        ChatEntity chatEntity = ChatEntity.builder()
-                .chatType(Common.USER)
-                .build();
-        chatRepository.save(chatEntity);
-
-        userChatRepository.save(UserChatMapEntity.builder()
-                .chatId(chatEntity.getId())
-                .userId(receiverId)
-                .build()
-        );
-        userChatRepository.save(UserChatMapEntity.builder()
-                .chatId(chatEntity.getId())
-                .userId(senderId)
-                .build()
-        );
+//        ChatEntity chatEntity = ChatEntity.builder()
+//                .chatType(Common.USER)
+//                .build();
+//        chatRepository.save(chatEntity);
+//
+//        userChatRepository.save(UserChatMapEntity.builder()
+//                .chatId(chatEntity.getId())
+//                .userId(receiverId)
+//                .build()
+//        );
+//        userChatRepository.save(UserChatMapEntity.builder()
+//                .chatId(chatEntity.getId())
+//                .userId(senderId)
+//                .build()
+//        );
     }
 
     @Transactional
-    public void deleteAddFriendRequest(Long sendId, String token) {
+    public void rejectAddFriendRequest(Long sendId, String token) {
         Long receiveId = TokenHelper.getUserIdFromToken(token);
-        friendRequestReposiroty.deleteByReceiverIdAndSenderId(receiveId, sendId);
+        friendRequestRepository.deleteByReceiverIdAndSenderId(receiveId, sendId);
     }
 
-    public Page<FriendPerPageOutput> getFriendPerPage(String token, int pageNum) {
-        Pageable pageable = PageRequest.of(pageNum - 1, 3);
-        Long senderId = TokenHelper.getUserIdFromToken(token);
-        Page<FriendMapEntity> totalFriendMapEntity = friendMapRepository.findAllByUserId(senderId, pageable);
-        List<FriendPerPageOutput> friendPerPageOutputs = new ArrayList<>();
-        for (FriendMapEntity friendMapEntity : totalFriendMapEntity) {
-            Long friendId = null;
-            if (!friendMapEntity.getUserId1().equals(senderId)) {
-                friendId = friendMapEntity.getUserId1();
-            } else {
-                friendId = friendMapEntity.getUserId2();
-            }
-            UserEntity userEntity = userRepository.findById(friendId).get();
-            friendPerPageOutputs.add(FriendPerPageOutput.builder()
-                    .id(friendMapEntity.getId())
-                    .name(userEntity.getUsername())
-                    .userId(friendId)
-                    .build()
-            );
+    @Transactional(readOnly = true)
+    public Page<FriendRequestOutput> getFriendRequests(String accessToken, Pageable pageable) {
+        Long userId = TokenHelper.getUserIdFromToken(accessToken);
+        Page<FriendRequestEntity> friendRequestEntityPage = friendRequestRepository.findAllByReceiverId(userId, pageable);
+        if (Objects.isNull(friendRequestEntityPage) || friendRequestEntityPage.isEmpty()) {
+            return Page.empty();
         }
-        return new PageImpl<>(friendPerPageOutputs, pageable, totalFriendMapEntity.getTotalElements());
+
+        Map<Long, UserEntity> userEntityMap = userRepository.findAllByIdIn(
+                friendRequestEntityPage.stream().map(FriendRequestEntity::getSenderId).collect(Collectors.toList())
+        ).stream().collect(Collectors.toMap(UserEntity::getId, Function.identity()));
+
+        return friendRequestEntityPage.map(
+                friendRequestEntity -> {
+                    FriendRequestOutput friendRequestOutput = new FriendRequestOutput();
+                    if (userEntityMap.containsKey(friendRequestEntity.getSenderId())) {
+                        UserEntity userEntity = userEntityMap.get(friendRequestEntity.getSenderId());
+                        friendRequestOutput = FriendRequestOutput.builder()
+                                .id(userEntity.getId())
+                                .fullName(userEntity.getFullName())
+                                .imageUrl(userEntity.getImageUrl())
+                                .build();
+                    }
+                    return friendRequestOutput;
+                }
+        );
     }
 
-    public void deleteFriend(Long chatMapId) {
-        friendMapRepository.deleteById(chatMapId);
+//    public Page<FriendPerPageOutput> getFriendPerPage(String token, int pageNum) {
+//        Pageable pageable = PageRequest.of(pageNum - 1, 3);
+//        Long senderId = TokenHelper.getUserIdFromToken(token);
+//        Page<FriendMapEntity> totalFriendMapEntity = friendMapRepository.findAllByUserId(senderId, pageable);
+//        List<FriendPerPageOutput> friendPerPageOutputs = new ArrayList<>();
+//        for (FriendMapEntity friendMapEntity : totalFriendMapEntity) {
+//            Long friendId = null;
+//            if (!friendMapEntity.getUserId1().equals(senderId)) {
+//                friendId = friendMapEntity.getUserId1();
+//            } else {
+//                friendId = friendMapEntity.getUserId2();
+//            }
+//            UserEntity userEntity = userRepository.findById(friendId).get();
+//            friendPerPageOutputs.add(FriendPerPageOutput.builder()
+//                    .id(friendMapEntity.getId())
+//                    .name(userEntity.getUsername())
+//                    .userId(friendId)
+//                    .build()
+//            );
+//        }
+//        return new PageImpl<>(friendPerPageOutputs, pageable, totalFriendMapEntity.getTotalElements());
+//    }
+
+    @Transactional
+    public void deleteFriend(Long friendId, String accessToken) {
+        Long userId = TokenHelper.getUserIdFromToken(accessToken);
+        friendMapRepository.deleteAllByUserId1AndUserId2(userId, friendId);
+        friendMapRepository.deleteAllByUserId1AndUserId2(friendId, userId);
     }
 }
