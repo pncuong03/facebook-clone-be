@@ -10,4 +10,6 @@ public class Common {
     public static final String MEMBER = "MEMBER";
     public static final String USERNAME_IS_EXISTS = "USERNAME_IS_EXISTS";
     public static final String INCORRECT_PASSWORD = "INCORRECT_PASSWORD";
+    public static final String PUBLIC = "PUBLIC";
+    public static final String PRIVATE = "PRIVATE";
 }
