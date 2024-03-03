@@ -1,5 +1,6 @@
 package com.example.Othellodifficult.controller;
 
+import com.example.Othellodifficult.dto.event.EventCountOutput;
 import com.example.Othellodifficult.dto.event.EventNotificationOutput;
 import com.example.Othellodifficult.service.EventNotificationService;
 import lombok.AllArgsConstructor;
@@ -17,7 +18,7 @@ public class EventNotificationController {
     private final EventNotificationService eventNotificationService;
 
     @GetMapping
-    public List<EventNotificationOutput> getEvent(@RequestHeader(value = "Authorization") String accessToken){
+    public EventCountOutput getEvent(@RequestHeader(value = "Authorization") String accessToken){
         return eventNotificationService.getEvent(accessToken);
     }
 }

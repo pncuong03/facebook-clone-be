@@ -53,6 +53,7 @@ public class MessageService {
                             EventNotificationEntity.builder()
                                     .eventType(Common.MESSAGE)
                                     .userId(userChatEntity.getUserId())
+                                    .state(Common.NEW_EVENT)
                                     .build()
                     );
                 }
@@ -60,6 +61,4 @@ public class MessageService {
         });
         return messageInput.getMessage();
     }
-
-
 }

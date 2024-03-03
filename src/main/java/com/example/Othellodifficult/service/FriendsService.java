@@ -5,6 +5,7 @@ import com.example.Othellodifficult.dto.friends.FriendRequestOutput;
 import com.example.Othellodifficult.entity.*;
 import com.example.Othellodifficult.entity.friend.FriendMapEntity;
 import com.example.Othellodifficult.entity.friend.FriendRequestEntity;
+import com.example.Othellodifficult.entity.message.EventNotificationEntity;
 import com.example.Othellodifficult.repository.*;
 import com.example.Othellodifficult.token.TokenHelper;
 import lombok.AllArgsConstructor;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -25,8 +27,7 @@ public class FriendsService {
     private final FriendRequestRepository friendRequestRepository;
     private final UserRepository userRepository;
     private final FriendMapRepository friendMapRepository;
-    private final ChatRepository chatRepository;
-    private final UserChatRepository userChatRepository;
+    private final EventNotificationRepository eventNotificationRepository;
 
     @Transactional
     public void sendRequestAddFriend(Long receiveId, String accessToken) {
@@ -40,6 +41,15 @@ public class FriendsService {
                 .createdAt(LocalDateTime.now())
                 .build();
         friendRequestRepository.save(friendRequestEntity);
+        CompletableFuture.runAsync(() -> {
+            eventNotificationRepository.save(
+                    EventNotificationEntity.builder()
+                            .userId(receiveId)
+                            .eventType(Common.FRIEND_REQUEST)
+                            .state(Common.NEW_EVENT)
+                            .build()
+            );
+        });
     }
 
     @Transactional
@@ -56,6 +66,16 @@ public class FriendsService {
         );
 
         friendRequestRepository.deleteByReceiverIdAndSenderId(receiverId, senderId);
+
+        CompletableFuture.runAsync(() -> {
+            eventNotificationRepository.save(
+                    EventNotificationEntity.builder()
+                            .userId(senderId)
+                            .eventType(Common.ACCEPT_FRIEND_REQUEST)
+                            .state(Common.NEW_EVENT)
+                            .build()
+            );
+        });
 
 //        ChatEntity chatEntity = ChatEntity.builder()
 //                .chatType(Common.USER)

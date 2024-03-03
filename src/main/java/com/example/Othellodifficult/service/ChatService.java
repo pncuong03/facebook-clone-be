@@ -28,7 +28,7 @@ public class ChatService {
     private final UserChatRepository userChatMapRepository;
     private final UserRepository userRepository;
 
-    private ChatEntity detail(Long chatId) {
+    private ChatEntity detail(Long chatId) { // Class
         return chatRepository.findById(chatId).orElseThrow(
                 () -> new RuntimeException(Common.RECORD_NOT_FOUND)
         );

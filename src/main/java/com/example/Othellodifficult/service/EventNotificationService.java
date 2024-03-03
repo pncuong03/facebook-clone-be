@@ -1,6 +1,7 @@
 package com.example.Othellodifficult.service;
 
 import com.example.Othellodifficult.common.Common;
+import com.example.Othellodifficult.dto.event.EventCountOutput;
 import com.example.Othellodifficult.dto.event.EventNotificationOutput;
 import com.example.Othellodifficult.entity.message.EventNotificationEntity;
 import com.example.Othellodifficult.repository.EventNotificationRepository;
@@ -19,31 +20,36 @@ public class EventNotificationService {
     private final EventNotificationRepository eventNotificationRepository;
 
     @Transactional
-    public List<EventNotificationOutput> getEvent(String accessToken) {
+    public EventCountOutput getEvent(String accessToken) {
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
 
         while (Boolean.TRUE.equals(Boolean.TRUE)) {
-            List<EventNotificationEntity> eventNotificationEntities = eventNotificationRepository.findAllByUserId(userId);
+            List<EventNotificationEntity> events = eventNotificationRepository.findAllByUserId(userId);
 
-            if (Objects.nonNull(eventNotificationEntities) && !eventNotificationEntities.isEmpty()) {
-                List<EventNotificationOutput> eventNotificationOutputs = new ArrayList<>();
-                for (EventNotificationEntity eventNotificationEntity : eventNotificationEntities) {
-                    eventNotificationOutputs.add(
-                            EventNotificationOutput.builder()
-                                    .id(eventNotificationEntity.getId())
-                                    .eventType(eventNotificationEntity.getEventType())
-                                    .content("coming soon !!!")
-                                    .build()
-                    );
+            List<EventNotificationEntity> newEvents = new ArrayList<>();
+            for (EventNotificationEntity event : events){
+                if (Common.NEW_EVENT.equals(event.getState())){
+                    newEvents.add(event);
                 }
-                CompletableFuture.runAsync(() -> {
-                    eventNotificationRepository.deleteAll(eventNotificationEntities);
-                });
-                return eventNotificationOutputs;
+            }
+
+            if (!newEvents.isEmpty()) {
+                EventCountOutput eventCountOutput = new EventCountOutput();
+                for (EventNotificationEntity event : events){
+                    if (Common.MESSAGE.equals(event.getEventType())){
+                        eventCountOutput.setMessageCount(eventCountOutput.getMessageCount() + 1);
+                    }
+                    else {
+                        eventCountOutput.setInformCount(eventCountOutput.getInformCount() + 1);
+                    }
+                }
+                for (EventNotificationEntity newEvent : newEvents){
+                    newEvent.setState(Common.OLD_EVENT);
+                }
+                eventNotificationRepository.saveAll(newEvents);
+                return eventCountOutput;
             }
         }
-
-
         return null;
     }
 }

@@ -15,6 +15,7 @@ public class EventNotificationEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long userId; // phuc = 2
-    private String eventType; // message
+    private Long userId;
+    private String eventType; // MESSAGE; FRIEND_REQUEST
+    private String state;
 }
