@@ -18,4 +18,5 @@ public class EventNotificationEntity {
     private Long userId;
     private String eventType; // MESSAGE; FRIEND_REQUEST
     private String state;
+    private Long chatId;
 }

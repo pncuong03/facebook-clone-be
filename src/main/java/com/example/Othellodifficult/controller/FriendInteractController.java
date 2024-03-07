@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("api/v1/user/post/interaction")
 @AllArgsConstructor
-public class InteractController {
+public class FriendInteractController {
     private final UserInteractService userInteractService;
 
     @Operation(summary = "Thích bài viết của bạn bè")

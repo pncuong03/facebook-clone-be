@@ -2,7 +2,6 @@ package com.example.Othellodifficult.service;
 
 import com.example.Othellodifficult.common.Common;
 import com.example.Othellodifficult.dto.event.EventCountOutput;
-import com.example.Othellodifficult.dto.event.EventNotificationOutput;
 import com.example.Othellodifficult.entity.message.EventNotificationEntity;
 import com.example.Othellodifficult.repository.EventNotificationRepository;
 import com.example.Othellodifficult.token.TokenHelper;
@@ -10,46 +9,76 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 public class EventNotificationService {
     private final EventNotificationRepository eventNotificationRepository;
+    // https://community.sonarsource.com/t/java-rule-s3077-should-not-apply-to-references-to-immutable-objects/15200/3
+    // https://community.sonarsource.com/t/non-primitive-fields-should-not-be-volatile-spurious-bug/89068
+    public static volatile Map<Long, Integer> map1 = new HashMap<>();  // currentNewMessage
+    public static volatile Map<Long, Integer> map2 = new HashMap<>();  // oldNewMessage
 
     @Transactional
     public EventCountOutput getEvent(String accessToken) {
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
+        if (!map1.containsKey(userId)){ // userId = 1
+            System.out.println("FIRST CONNECT OF USER " + userId);
+            List<EventNotificationEntity> eventNotificationEntities = eventNotificationRepository.findAllByUserId(userId);
+            map1.put(userId, eventNotificationEntities.size());
+            map2.put(userId,
+                    eventNotificationEntities.stream()
+                            .filter(e -> e.getState().equals(Common.OLD_EVENT))
+                            .collect(Collectors.toList()).size()
+            );
+        }
 
-        while (Boolean.TRUE.equals(Boolean.TRUE)) {
-            List<EventNotificationEntity> events = eventNotificationRepository.findAllByUserId(userId);
+        System.out.println("MAP HAVE:");
+        System.out.println(map1);
+        System.out.println(map2);
 
-            List<EventNotificationEntity> newEvents = new ArrayList<>();
-            for (EventNotificationEntity event : events){
-                if (Common.NEW_EVENT.equals(event.getState())){
-                    newEvents.add(event);
+        while (true) {
+            if (!map1.get(userId).equals(map2.get(userId))) {
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(Common.ACTION_FAIL);
                 }
-            }
+                System.out.println("NEW EVENT FOR USER_ID :" + userId);
+                System.out.println("MAP HAVE:");
+                System.out.println(map1);
+                System.out.println(map2);
+                map2.put(userId, map1.get(userId));
+                System.out.println("MAP 2 AFTER PUSH: " + map2.get(userId));
+                List<EventNotificationEntity> events = eventNotificationRepository.findAllByUserId(userId);
 
-            if (!newEvents.isEmpty()) {
-                EventCountOutput eventCountOutput = new EventCountOutput();
-                for (EventNotificationEntity event : events){
-                    if (Common.MESSAGE.equals(event.getEventType())){
-                        eventCountOutput.setMessageCount(eventCountOutput.getMessageCount() + 1);
+                List<EventNotificationEntity> newEvents = new ArrayList<>();
+                for (EventNotificationEntity event : events) {
+                    if (Common.NEW_EVENT.equals(event.getState())) {
+                        newEvents.add(event);
                     }
-                    else {
-                        eventCountOutput.setInformCount(eventCountOutput.getInformCount() + 1);
+                }
+
+                if (!newEvents.isEmpty()) {
+                    EventCountOutput eventCountOutput = new EventCountOutput();
+                    for (EventNotificationEntity event : events) {
+                        if (Common.MESSAGE.equals(event.getEventType())) {
+                            eventCountOutput.setMessageCount(eventCountOutput.getMessageCount() + 1);
+                        } else {
+                            eventCountOutput.setInformCount(eventCountOutput.getInformCount() + 1);
+                        }
                     }
+                    for (EventNotificationEntity newEvent : newEvents) {
+                        newEvent.setState(Common.OLD_EVENT);
+                    }
+                    eventNotificationRepository.saveAll(newEvents);
+                    return eventCountOutput;
                 }
-                for (EventNotificationEntity newEvent : newEvents){
-                    newEvent.setState(Common.OLD_EVENT);
-                }
-                eventNotificationRepository.saveAll(newEvents);
-                return eventCountOutput;
             }
         }
-        return null;
     }
 }

@@ -17,7 +17,9 @@ public class MessageEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long senderId;
-    private Long chatId;
+    private Long chatId1;
+    private Long chatId2;
+    private Long groupChatId;
     private String message;
     private LocalDateTime createdAt;
 }
