@@ -1,4 +1,4 @@
-package com.example.Othellodifficult.dto.group;
+package com.example.Othellodifficult.dto.user;
 
 import lombok.*;
 
@@ -7,9 +7,8 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class GroupMemberOutPut {
+public class UserOutput {
     private Long id;
     private String fullName;
     private String imageUrl;
-    private String positionInGroup;
 }

@@ -2,6 +2,8 @@ package com.example.Othellodifficult.dto.group;
 
 import lombok.*;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.util.List;
 
 @Getter
@@ -10,6 +12,10 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class GroupInput {
+    @NotBlank
     private String name;
-    private List<Long> listUserId;
+    @Size(min = 1)
+    private List<Long> userIds;
+    @Size(min = 1)
+    private List<Long> tagIds;
 }

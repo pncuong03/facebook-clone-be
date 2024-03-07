@@ -1,24 +1,19 @@
 package com.example.Othellodifficult.entity;
 
 import lombok.*;
+
 import javax.persistence.*;
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Builder
-@Table(name = "tbl_chat")
-public class ChatEntity {
+@Table(name = "tbl_tag")
+public class TagEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    private Long managerId;
-    private String chatType;
-    private LocalDateTime newestChatTime;
-    private Long userId1;
-    private Long userId2;
 }

@@ -8,14 +8,13 @@ import javax.persistence.*;
 @NoArgsConstructor
 @Getter
 @Setter
-@Table(name ="tbl_group")
+@Table(name ="tbl_like_map")
 @Entity
 @Builder
-public class GroupEntity {
+public class LikeMapEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long managerGroupId;
-    private String name;
-    private Integer memberCount;
+    private Long postId;
+    private Long userId;
 }

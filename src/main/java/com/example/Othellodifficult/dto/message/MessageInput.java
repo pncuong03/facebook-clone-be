@@ -1,15 +1,16 @@
 package com.example.Othellodifficult.dto.message;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
+import javax.validation.constraints.NotBlank;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class MessageInput {
+    @NonNull
     private Long chatId;
+    @NotBlank
     private String message;
 }

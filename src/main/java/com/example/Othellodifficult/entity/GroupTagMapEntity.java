@@ -4,18 +4,17 @@ import lombok.*;
 
 import javax.persistence.*;
 
-@AllArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
-@Table(name ="tbl_group")
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Builder
-public class GroupEntity {
+@Table(name = "tbl_group_tag_map_entity")
+public class GroupTagMapEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long managerGroupId;
-    private String name;
-    private Integer memberCount;
+    private Long tagId;
+    private Long groupId;
 }

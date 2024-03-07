@@ -2,9 +2,14 @@ package com.example.Othellodifficult.controller;
 
 import com.example.Othellodifficult.dto.group.*;
 import com.example.Othellodifficult.service.GroupService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
+import org.springdoc.api.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -12,26 +17,47 @@ import java.util.List;
 @AllArgsConstructor
 public class GroupController {
     private final GroupService groupService;
-    @PostMapping
-    public void create(@RequestBody GroupInput groupInput, @RequestHeader("Authorization") String accessToken){
+
+    @Operation(summary = "Tìm kiếm nhóm")
+    @GetMapping("/search")
+    public Page<GroupOutput> getGroups(@RequestParam(required = false) String search,
+                                       @RequestParam(required = false) Long tagId,
+                                       @ParameterObject Pageable pageable){
+        return groupService.getGroups(search, tagId, pageable);
+    }
+
+    @Operation(summary = "Tạo nhóm")
+    @PostMapping("/create-group")
+    public void create(@RequestBody @Valid GroupInput groupInput,
+                       @RequestHeader("Authorization") String accessToken) {
         groupService.create(groupInput, accessToken);
     }
-    @GetMapping("/{id}")
-    public List<GroupMemberOutPut> getGroupMemBer(@PathVariable(value = "id") Long groupId){
-        return groupService.getGroupMember(groupId);
+
+    @Operation(summary = "Lấy danh sách thành viên trong nhóm")
+    @GetMapping("/members")
+    public Page<GroupMemberOutPut> getGroupMemBer(@RequestParam Long groupId,
+                                                  @RequestHeader("Authorization") String accessToken,
+                                                  @ParameterObject Pageable pageable) {
+        return groupService.getGroupMembers(groupId, accessToken, pageable);
     }
-    @PostMapping("/add-new")
-    public String addNewMember(@RequestBody GroupAddNewMemberInput groupAddNewMemberInput){
-        return groupService.addNewMember(groupAddNewMemberInput);
+
+    @Operation(summary = "Thêm thành viên vào nhóm")
+    @PostMapping("/add-member")
+    public void addNewMember(@RequestBody @Valid GroupAddNewMemberInput groupAddNewMemberInput,
+                             @RequestHeader("Authorization") String accessToken) {
+        groupService.addNewMember(groupAddNewMemberInput, accessToken);
     }
+
+    @Operation(summary = "Xóa thành viên khỏi nhóm")
     @DeleteMapping("/delete-member")
-    public String deleteMember(@RequestHeader("Authorization") String accessToken,
-                               @RequestBody GroupDeleteMemberInput groupDeleteMemberInput)
-    {
-        return groupService.deleteMember(accessToken, groupDeleteMemberInput);
+    public void deleteMember(@RequestHeader("Authorization") String accessToken,
+                             @RequestBody @Valid GroupDeleteMemberInput groupDeleteMemberInput) {
+        groupService.deleteMember(accessToken, groupDeleteMemberInput);
     }
+
+    @Operation(summary = "Rời nhóm")
     @DeleteMapping("/leave-group")
-    public void leaveTheGroupChat(@RequestBody GroupLeaveTheGroupInput groupLeaveTheGroupInput){
+    public void leaveTheGroupChat(@RequestBody @Valid GroupLeaveTheGroupInput groupLeaveTheGroupInput) {
         groupService.leaveTheGroup(groupLeaveTheGroupInput);
     }
 }

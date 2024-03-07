@@ -18,6 +18,13 @@ import javax.validation.Valid;
 public class PostController {
     private final PostService postService;
 
+    @Operation(summary = "Danh sách bài viết PUBLIC của bạn bè")
+    @PostMapping("/list/friends")
+    public Page<PostOutput> getPostsOfFriends(@RequestHeader("Authorization") String accessToken,
+                                              @ParameterObject Pageable pageable){
+        return postService.getPostsOfFriends(accessToken, pageable);
+    }
+
     @Operation(summary = "Đăng bài viết")
     @PostMapping("/post")
     public void creatPost(@RequestHeader("Authorization") String accessToken,
@@ -30,7 +37,7 @@ public class PostController {
     public void updatePost(@RequestHeader("Authorization") String accessToken,
                            @RequestParam Long postId,
                            @RequestBody @Valid CreatePostInput updatePostInput){
-        postService.sharePost(accessToken, postId, updatePostInput);
+        postService.updatePost(accessToken, postId, updatePostInput);
     }
 
     @Operation(summary = "Xóa bài viết")
@@ -48,7 +55,7 @@ public class PostController {
     }
 
     @Operation(summary = "Danh sách bài viết (của mình)")
-    @GetMapping("/list")
+    @GetMapping("/list/me")
     public Page<PostOutput> getMyPost(@RequestHeader("Authorization") String accessToken,
                                       @ParameterObject Pageable pageable){
         return postService.getMyPost(accessToken, pageable);

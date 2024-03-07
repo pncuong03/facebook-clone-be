@@ -7,6 +7,7 @@ import com.example.Othellodifficult.entity.UserEntity;
 import com.example.Othellodifficult.entity.UserChatMapEntity;
 import com.example.Othellodifficult.mapper.ChatMapper;
 import com.example.Othellodifficult.repository.ChatRepository;
+import com.example.Othellodifficult.repository.CustomRepository;
 import com.example.Othellodifficult.repository.UserChatRepository;
 import com.example.Othellodifficult.repository.UserRepository;
 import com.example.Othellodifficult.token.TokenHelper;
@@ -27,8 +28,9 @@ public class ChatService {
     private final ChatRepository chatRepository;
     private final UserChatRepository userChatMapRepository;
     private final UserRepository userRepository;
+    private final CustomRepository customRepository;
 
-    private ChatEntity detail(Long chatId) {
+    private ChatEntity detail(Long chatId) { // Class
         return chatRepository.findById(chatId).orElseThrow(
                 () -> new RuntimeException(Common.RECORD_NOT_FOUND)
         );
@@ -107,7 +109,7 @@ public class ChatService {
 
     @Transactional
     public void addNewMemberToGroupChat(ChatAddNewMemberInput chatAddNewMemberInput, String accessToken) {
-        ChatEntity chatEntity = chatRepository.findById(chatAddNewMemberInput.getGroupChatId()).get();
+        ChatEntity chatEntity = customRepository.getChat(chatAddNewMemberInput.getGroupChatId());
         if (!Objects.equals(chatEntity.getManagerId(), TokenHelper.getUserIdFromToken(accessToken))) {
             throw new RuntimeException(Common.ACTION_FAIL);
         }
@@ -140,12 +142,6 @@ public class ChatService {
         if (!Objects.equals(chatEntity.getManagerId(), userId)) {
             throw new RuntimeException(Common.ACTION_FAIL);
         }
-
-//        Long checkUserId = TokenHelper.getUserIdFromToken(accessToken);
-//        Long managerId = chatRepository.findById(chatDeleteMemberInput.getGroupChatId()).get().getManagerId();
-//        if (!Objects.equals(checkUserId, managerId)) {
-//            throw new RuntimeException(Common.ACTION_FAIL);
-//        }
 
         if (Objects.equals(chatDeleteMemberInput.getUserId(), userId)) {
             throw new RuntimeException(Common.ACTION_FAIL);
