@@ -19,6 +19,8 @@ public class ChatEntity {
     private Long managerId;
     private String chatType;
     private LocalDateTime newestChatTime;
+    @Column(name = "user_id1")
     private Long userId1;
+    @Column(name = "user_id2")
     private Long userId2;
 }

@@ -17,7 +17,9 @@ public class MessageEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long senderId;
+    @Column(name = "chat_id1")
     private Long chatId1;
+    @Column(name = "chat_id2")
     private Long chatId2;
     private Long groupChatId;
     private String message;

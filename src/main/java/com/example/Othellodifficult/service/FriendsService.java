@@ -119,10 +119,9 @@ public class FriendsService {
                             .state(Common.NEW_EVENT)
                             .build()
             );
-            EventHelper.pushEventForUserByUserId(senderId);
         });
 
-        CompletableFuture.runAsync(() -> {
+//        CompletableFuture.runAsync(() -> {
             chatRepository.save(
                     ChatEntity.builder()
                             .chatType(Common.USER)
@@ -139,7 +138,8 @@ public class FriendsService {
                             .userId1(senderId)
                             .build()
             );
-        });
+//        });
+        EventHelper.pushEventForUserByUserId(senderId);
     }
 
     @Transactional
