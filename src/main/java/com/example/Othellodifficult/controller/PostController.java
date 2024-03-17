@@ -58,6 +58,6 @@ public class PostController {
     @GetMapping("/list/me")
     public Page<PostOutput> getMyPost(@RequestHeader("Authorization") String accessToken,
                                       @ParameterObject Pageable pageable){
-        return postService.getMyPost(accessToken, pageable);
+        return postService.getMyPosts(accessToken, pageable);
     }
 }

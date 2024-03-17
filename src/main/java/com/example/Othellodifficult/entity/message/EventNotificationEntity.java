@@ -3,6 +3,7 @@ package com.example.Othellodifficult.entity.message;
 import lombok.*;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -16,7 +17,9 @@ public class EventNotificationEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long userId;
-    private String eventType; // MESSAGE; FRIEND_REQUEST
-    private String state;
+    private String eventType; // MESSAGE; NOTIFICATION
+    private String state; // NEW_EVENT; OLD_EVENT
     private Long chatId;
+    private String message;
+    private LocalDateTime createdAt;
 }

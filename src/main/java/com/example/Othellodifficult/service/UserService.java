@@ -2,6 +2,7 @@ package com.example.Othellodifficult.service;
 
 import com.example.Othellodifficult.common.Common;
 import com.example.Othellodifficult.dto.user.ChangeInfoUserRequest;
+import com.example.Othellodifficult.dto.user.UserOutputV2;
 import com.example.Othellodifficult.dto.user.UserRequest;
 import com.example.Othellodifficult.entity.UserEntity;
 import com.example.Othellodifficult.mapper.UserMapper;
@@ -25,6 +26,13 @@ public class UserService {
         return userRepository.findById(userId).orElseThrow(
                 () -> new RuntimeException(Common.RECORD_NOT_FOUND)
         );
+    }
+
+    @Transactional(readOnly = true)
+    public UserOutputV2 getUserInformation(String accessToken){
+        Long userId = TokenHelper.getUserIdFromToken(accessToken);
+        UserEntity userEntity = getUserBy(userId);
+        return userMapper.getOutputFromEntity(userEntity);
     }
 
     @Transactional

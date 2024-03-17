@@ -4,13 +4,12 @@ import com.example.Othellodifficult.common.Common;
 import com.example.Othellodifficult.dto.post.CommentOutput;
 import com.example.Othellodifficult.dto.post.PostOutput;
 import com.example.Othellodifficult.dto.user.UserOutput;
-import com.example.Othellodifficult.entity.CommentMapEntity;
-import com.example.Othellodifficult.entity.LikeMapEntity;
-import com.example.Othellodifficult.entity.PostEntity;
-import com.example.Othellodifficult.entity.UserEntity;
+import com.example.Othellodifficult.entity.*;
+import com.example.Othellodifficult.entity.message.EventNotificationEntity;
 import com.example.Othellodifficult.helper.StringUtils;
 import com.example.Othellodifficult.mapper.PostMapper;
 import com.example.Othellodifficult.repository.*;
+import com.example.Othellodifficult.token.EventHelper;
 import com.example.Othellodifficult.token.TokenHelper;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -36,6 +35,8 @@ public class UserInteractService {
     private final CustomRepository customRepository;
     private final UserRepository userRepository;
     private final PostMapper postMapper;
+    private final EventNotificationRepository eventNotificationRepository;
+    private final NotificationRepository notificationRepository;
 
     @Transactional
     public void like(Long postId, String accessToken) {
@@ -43,15 +44,34 @@ public class UserInteractService {
         if (Boolean.TRUE.equals(likeMapRepository.existsByUserIdAndPostId(userId, postId))) {
             throw new RuntimeException(Common.ACTION_FAIL);
         }
+        PostEntity postEntity = postRepository.findById(postId).get();
         CompletableFuture.runAsync(() -> {
+            notificationRepository.save(
+                    NotificationEntity.builder()
+                            .type(Common.USER)
+                            .userId(postEntity.getUserId())
+                            .interactId(userId)
+                            .interactType(Common.LIKE)
+                            .postId(postId)
+                            .hasSeen(false)
+                            .createdAt(LocalDateTime.now())
+                            .build()
+            );
             likeMapRepository.save(
                     LikeMapEntity.builder()
                             .userId(userId)
                             .postId(postId)
                             .build()
             );
+            eventNotificationRepository.save(
+                    EventNotificationEntity.builder()
+                            .eventType(Common.LIKE)
+                            .userId(postEntity.getUserId())
+                            .state(Common.NEW_EVENT)
+                            .build()
+            );
+            EventHelper.pushEventForUserByUserId(postEntity.getUserId());
         });
-        PostEntity postEntity = postRepository.findById(postId).get();
         Integer likeCount = postEntity.getLikeCount();
         postEntity.setLikeCount(++likeCount);
         postRepository.save(postEntity);
@@ -72,7 +92,20 @@ public class UserInteractService {
     @Transactional
     public void comment(Long postId, String comment, Long commentId, String accessToken) {
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
+        PostEntity postEntity = postRepository.findById(postId).get();
+
         CompletableFuture.runAsync(() -> {
+            notificationRepository.save(
+                    NotificationEntity.builder()
+                            .type(Common.USER)
+                            .userId(postEntity.getUserId())
+                            .interactId(userId)
+                            .interactType(Common.COMMENT)
+                            .postId(postId)
+                            .hasSeen(false)
+                            .createdAt(LocalDateTime.now())
+                            .build()
+            );
             commentMapRepository.save(
                     CommentMapEntity.builder()
                             .userId(userId)
@@ -82,9 +115,16 @@ public class UserInteractService {
                             .createdAt(LocalDateTime.now())
                             .build()
             );
+            eventNotificationRepository.save(
+                    EventNotificationEntity.builder()
+                            .eventType(Common.COMMENT)
+                            .userId(postEntity.getUserId())
+                            .state(Common.NEW_EVENT)
+                            .build()
+            );
+            EventHelper.pushEventForUserByUserId(postEntity.getUserId());
         });
 
-        PostEntity postEntity = postRepository.findById(postId).get();
         Integer commentCount = postEntity.getCommentCount();
         postEntity.setLikeCount(++commentCount);
         postRepository.save(postEntity);

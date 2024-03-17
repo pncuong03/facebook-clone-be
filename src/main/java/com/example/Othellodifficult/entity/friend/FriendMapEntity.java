@@ -10,6 +10,7 @@ import javax.persistence.*;
 @Builder
 @Table(name ="tbl_friend_map")
 @Entity
+@EqualsAndHashCode
 public class FriendMapEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

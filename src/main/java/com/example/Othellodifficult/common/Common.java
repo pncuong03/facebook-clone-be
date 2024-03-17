@@ -13,8 +13,14 @@ public final class Common {
     public static final String PUBLIC = "PUBLIC";
     public static final String PRIVATE = "PRIVATE";
     public static final String UN_AUTHORIZATION = "UN_AUTHORIZATION";
-    public static final String FRIEND_REQUEST = "FRIEND_REQUEST";
-    public static final String ACCEPT_FRIEND_REQUEST = "ACCEPT_FRIEND_REQUEST";
     public static final String NEW_EVENT = "NEW_EVENT";
     public static final String OLD_EVENT = "OLD_EVENT";
+    public static final String LIKE = "LIKE";
+    public static final String COMMENT = "COMMENT";
+    public static final String AUTHORIZATION = "Authorization";
+    public static final String NAME = "name";
+    public static final String ASC = "ASC";
+    public static final String DESC = "DESC";
+    public static final String SHARE = "SHARE";
+    public static final String NOTIFICATION = "NOTIFICATION";
 }

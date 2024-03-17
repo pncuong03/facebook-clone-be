@@ -4,13 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.lang.NonNull;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Getter
 @Setter
@@ -36,6 +37,8 @@ public class Filter<T> {
         private Map<Object, Object> paramMap;
         private Integer paramCount;
         private StringBuilder conditions;
+        private String orderBy;
+
 
         public FilterBuilder(Class<T> clazz, EntityManager entityManager) {
             entityClazz = clazz;
@@ -44,6 +47,7 @@ public class Filter<T> {
             paramMap = new HashMap<>();
             paramCount = 1;
             conditions = new StringBuilder();
+            orderBy = "";
         }
 
         @Override
@@ -59,14 +63,20 @@ public class Filter<T> {
         }
 
         @Override
-        public FilterBuilder isContain(String fieldName, String value) {
-            paramMap.put(paramCount, "%" + value + "%");
+        public FilterBuilder<T> isContain(String fieldName, String value) {
+            if (Objects.isNull(value)){
+                return this;
+            }
+            paramMap.put(paramCount, "%" + escape(value) + "%");
             conditions.append(this.logicOperator).append("e.").append(fieldName).append(" LIKE ?").append(paramCount++);
             return this;
         }
 
         @Override
         public FilterBuilder<T> isNotIn(String fieldName, Collection values) {
+            if (Objects.isNull(values)){
+                return this;
+            }
             paramMap.put(paramCount, values);
             conditions.append(this.logicOperator).append("e.").append(fieldName).append(" NOT IN (?").append(paramCount++).append(")");
             return this;
@@ -74,6 +84,9 @@ public class Filter<T> {
 
         @Override
         public FilterBuilder<T> isIn(String fieldName, Collection values) {
+            if (Objects.isNull(values)){
+                return this;
+            }
             paramMap.put(paramCount, values);
             conditions.append(this.logicOperator).append("e.").append(fieldName).append(" IN (?").append(paramCount++).append(")");
             return this;
@@ -81,12 +94,51 @@ public class Filter<T> {
 
         @Override
         public FilterBuilder<T> isEqual(String fieldName, Object value) {
+            if (Objects.isNull(value)){
+                return this;
+            }
             paramMap.put(paramCount, value);
             conditions.append(this.logicOperator).append("e.").append(fieldName).append(" = ?").append(paramCount++);
             return this;
         }
 
+        @Override
+        public FilterBuilder<T> orderBy(String fieldName, String orderType) {
+            orderBy = " ORDER BY e." + fieldName + " " + orderType;
+            return this;
+        }
+
+        @Override
+        public Page<T> getPage(Pageable pageable) {
+            this.typedQuery = genQuery();
+            for (Object key : paramMap.keySet()) {
+                Object value = paramMap.get(key);
+                typedQuery.setParameter((int) key, value);
+            }
+
+            int pageNumber = pageable.getPageNumber();
+            int pageSize = pageable.getPageSize();
+            typedQuery.setFirstResult((pageNumber * pageSize));
+            typedQuery.setMaxResults((pageNumber * pageSize) + pageSize);
+            List<T> content = typedQuery.getResultList();
+            if (Objects.isNull(content) || content.isEmpty()){
+                return Page.empty();
+            }
+            long total = typedQuery.getResultStream().count();
+            System.out.println(query);
+            return new PageImpl<>(content, pageable, total);
+        }
+
         public Filter<T> build(){
+            for (Object key : paramMap.keySet()) {
+                Object value = paramMap.get(key);
+                typedQuery.setParameter((int) key, value);
+            }
+            System.out.println(query);
+            return new Filter<>(this.typedQuery);
+        }
+
+        private TypedQuery<T> genQuery(){
             String newConditions = "";
             if (conditions.length() > 0){
                 newConditions = new String(this.conditions);
@@ -96,15 +148,13 @@ public class Filter<T> {
                 else if (newConditions.startsWith(" OR")){
                     newConditions = newConditions.substring(3);
                 }
-                query.append("WHERE").append(newConditions);
+                query.append("WHERE ").append(newConditions);
             }
-            this.typedQuery = entityManager.createQuery(new String(query), entityClazz);
-            for (Object key : paramMap.keySet()) {
-                Object value = paramMap.get(key);
-                typedQuery.setParameter((int) key, value);
-            }
-            System.out.println(query);
-            return new Filter<>(this.typedQuery);
+            return entityManager.createQuery(new String(query), entityClazz);
+        }
+
+        private String escape(@NonNull String value) {
+            return value.replace("%", "\\%").replace("_", "\\_");
         }
     }
 }

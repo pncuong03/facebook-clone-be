@@ -1,170 +1,118 @@
 package com.example.Othellodifficult.service;
 
+import com.example.Othellodifficult.base.filter.Filter;
 import com.example.Othellodifficult.common.Common;
-import com.example.Othellodifficult.dto.chat.*;
+import com.example.Othellodifficult.dto.chat.ChatOutput;
+import com.example.Othellodifficult.dto.message.MessageOutput;
 import com.example.Othellodifficult.entity.ChatEntity;
-import com.example.Othellodifficult.entity.UserEntity;
 import com.example.Othellodifficult.entity.UserChatMapEntity;
+import com.example.Othellodifficult.entity.UserEntity;
+import com.example.Othellodifficult.entity.message.EventNotificationEntity;
+import com.example.Othellodifficult.entity.message.MessageEntity;
 import com.example.Othellodifficult.mapper.ChatMapper;
-import com.example.Othellodifficult.repository.ChatRepository;
-import com.example.Othellodifficult.repository.CustomRepository;
-import com.example.Othellodifficult.repository.UserChatRepository;
-import com.example.Othellodifficult.repository.UserRepository;
+import com.example.Othellodifficult.mapper.MessageMapper;
+import com.example.Othellodifficult.repository.*;
 import com.example.Othellodifficult.token.TokenHelper;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import javax.persistence.EntityManager;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
-@Service
 @AllArgsConstructor
+@Service
 public class ChatService {
-    private final ChatMapper chatMapper;
-    private final ChatRepository chatRepository;
+    private final EntityManager entityManager;
     private final UserChatRepository userChatMapRepository;
-    private final UserRepository userRepository;
+    private final ChatMapper chatMapper;
+    private final EventNotificationRepository eventNotificationRepository;
+    private final MessageRepository messageRepository;
     private final CustomRepository customRepository;
+    private final UserChatRepository userChatRepository;
+    private final UserRepository userRepository;
+    private final MessageMapper messageMapper;
 
-    private ChatEntity detail(Long chatId) { // Class
-        return chatRepository.findById(chatId).orElseThrow(
-                () -> new RuntimeException(Common.RECORD_NOT_FOUND)
-        );
-    }
+    @Transactional(readOnly = true)
+    public Page<MessageOutput> getMessages(String accessToken, Long chatId, Pageable pageable) {
+        Long userId = TokenHelper.getUserIdFromToken(accessToken);
+        Page<MessageEntity> messageEntities = Filter.builder(MessageEntity.class, entityManager)
+                .search()
+                .isEqual("chatId1", chatId)
+                .isEqual("chatId2", chatId)
+                .isEqual("groupChatId", chatId)
+                .orderBy("createdAt", Common.DESC)
+                .getPage(pageable);
 
-    @Transactional
-    public void createGroupChat(CreateGroupChatInput createGroupChatInput, String accessToken) {
-        Long managerId = TokenHelper.getUserIdFromToken(accessToken);
-        if (createGroupChatInput.getUserIds().contains(managerId)) {
-            throw new RuntimeException(Common.ACTION_FAIL);
-        }
-        ChatEntity chatEntity = chatMapper.getEntityFromInput(createGroupChatInput);
-
-        chatEntity.setManagerId(managerId);
-        chatEntity.setNewestChatTime(LocalDateTime.now());
-        chatEntity.setChatType(Common.GROUP);
-
-        chatRepository.save(chatEntity);
-
-        userChatMapRepository.save(
-                UserChatMapEntity.builder()
-                        .userId(managerId)
-                        .chatId(chatEntity.getId())
-                        .build()
-        );
-
-        for (Long userId : createGroupChatInput.getUserIds()) {
-            userChatMapRepository.save(
-                    UserChatMapEntity.builder()
-                            .userId(userId)
-                            .chatId(chatEntity.getId())
-                            .build()
+        List<Long> userIds = new ArrayList<>();
+        ChatEntity chatEntity = customRepository.getChat(chatId);
+        if (Common.USER.equals(chatEntity.getChatType())) {
+            userIds.add(chatEntity.getUserId1());
+            userIds.add(chatEntity.getUserId2());
+        } else if (Common.GROUP.equals(chatEntity.getChatType())) {
+            userIds.addAll(
+                    userChatRepository.findAllByChatId(chatId).stream()
+                            .map(UserChatMapEntity::getUserId)
+                            .collect(Collectors.toList())
             );
         }
+        Map<Long, UserEntity> userEntityMap = userRepository.findAllByIdIn(userIds).stream()
+                .collect(Collectors.toMap(UserEntity::getId, Function.identity()));
+
+        return messageEntities.map(
+                messageEntity -> {
+                    MessageOutput messageOutput = messageMapper.getOutputFromEntity(messageEntity);
+                    if (userEntityMap.containsKey(messageEntity.getSenderId())){
+                        UserEntity userEntity = userEntityMap.get(messageEntity.getSenderId());
+                        messageOutput.setUserId(userEntity.getId());
+                        messageOutput.setFullName(userEntity.getFullName());
+                        messageOutput.setImageUrl(userEntity.getImageUrl());
+                        messageOutput.setIsMe(userId.equals(userEntity.getId()));
+                    }
+                    return messageOutput;
+                }
+        );
     }
 
     @Transactional(readOnly = true)
-    public List<ChatMemberOutput> getGroupChatMembersBy(Long groupChatId, String accessToken) {
+    public Page<ChatOutput> getChatList(String search, String accessToken, Pageable pageable) {
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
-        if (Boolean.FALSE.equals(userChatMapRepository.existsByUserIdAndChatId(userId, groupChatId))) {
-            throw new RuntimeException(Common.ACTION_FAIL);
+        List<Long> chatIds = null;
+        List<UserChatMapEntity> userChatMapEntities = userChatMapRepository.findAllByUserId(userId);
+        if (Objects.nonNull(userChatMapEntities) && !userChatMapEntities.isEmpty()) {
+            chatIds = userChatMapEntities.stream()
+                    .map(UserChatMapEntity::getChatId)
+                    .collect(Collectors.toList());
         }
 
-        List<UserChatMapEntity> userChatEntities = userChatMapRepository.findAllByChatId(groupChatId);
-        ChatEntity chatEntity = detail(groupChatId);
-        Long managerId = chatEntity.getManagerId();
+        Page<ChatEntity> chatEntities = Filter.builder(ChatEntity.class, entityManager)
+                .search()
+                .isIn("id", chatIds)
+                .isEqual("userId1", userId)
+                .filter()
+                .isContain("name", search)
+                .orderBy("newestChatTime", Common.DESC)
+                .getPage(pageable);
 
-        List<UserEntity> userEntities = userRepository.findAllByIdIn(
-                userChatEntities.stream().map(UserChatMapEntity::getId).collect(Collectors.toList())
-        );
+        chatIds = chatEntities.stream().map(ChatEntity::getId).collect(Collectors.toList());
+        Map<Long, List<EventNotificationEntity>> eventNotificationMap = eventNotificationRepository.findAllByIdIn(chatIds).stream()
+                .collect(Collectors.groupingBy(EventNotificationEntity::getChatId));
 
-        List<ChatMemberOutput> groupMemberOutputs = new ArrayList<>();
-        for (UserEntity user : userEntities) {
-            if (Objects.equals(user.getId(), managerId)) {
-                groupMemberOutputs.add(
-                        ChatMemberOutput.builder()
-                                .id(user.getId())
-                                .fullName(user.getFullName())
-                                .imageUrl(user.getImageUrl())
-                                .role(Common.ADMIN)
-                                .build()
-                );
+        return chatEntities.map(chatEntity -> {
+            ChatOutput chatOutput = chatMapper.getOutputFromEntity(chatEntity);
+            if (eventNotificationMap.containsKey(chatOutput.getId())) {
+                chatOutput.setMessageCount(eventNotificationMap.get(chatOutput.getId()).size());
             } else {
-                groupMemberOutputs.add(
-                        ChatMemberOutput.builder()
-                                .id(user.getId())
-                                .fullName(user.getFullName())
-                                .imageUrl(user.getImageUrl())
-                                .role(Common.MEMBER)
-                                .build()
-                );
+                chatOutput.setMessageCount(0);
             }
-        }
-        return groupMemberOutputs;
-    }
-
-    @Transactional
-    public void addNewMemberToGroupChat(ChatAddNewMemberInput chatAddNewMemberInput, String accessToken) {
-        ChatEntity chatEntity = customRepository.getChat(chatAddNewMemberInput.getGroupChatId());
-        if (!Objects.equals(chatEntity.getManagerId(), TokenHelper.getUserIdFromToken(accessToken))) {
-            throw new RuntimeException(Common.ACTION_FAIL);
-        }
-
-        List<UserChatMapEntity> userChatMapEntities =
-                userChatMapRepository.findAllByChatId(chatAddNewMemberInput.getGroupChatId());
-
-        List<Long> userIdsInGroup = userChatMapEntities.stream()
-                .map(UserChatMapEntity::getUserId)
-                .collect(Collectors.toList());
-
-        for (Long newUserId : chatAddNewMemberInput.getUserIds()) {
-            if (!userIdsInGroup.contains(newUserId)) {
-                userChatMapRepository.save(
-                        UserChatMapEntity.builder()
-                                .chatId(chatAddNewMemberInput.getGroupChatId())
-                                .userId(newUserId)
-                                .build()
-                );
-            } else {
-                throw new RuntimeException(Common.ACTION_FAIL);
-            }
-        }
-    }
-
-    @Transactional
-    public void deleteMember(String accessToken, ChatDeleteMemberInput chatDeleteMemberInput) {
-        ChatEntity chatEntity = chatRepository.findById(chatDeleteMemberInput.getGroupChatId()).get();
-        Long userId = TokenHelper.getUserIdFromToken(accessToken);
-        if (!Objects.equals(chatEntity.getManagerId(), userId)) {
-            throw new RuntimeException(Common.ACTION_FAIL);
-        }
-
-        if (Objects.equals(chatDeleteMemberInput.getUserId(), userId)) {
-            throw new RuntimeException(Common.ACTION_FAIL);
-        }
-        userChatMapRepository.deleteByUserIdAndChatId(
-                chatDeleteMemberInput.getUserId(),
-                chatDeleteMemberInput.getGroupChatId()
-        );
-    }
-
-    @Transactional
-    public void leaveTheGroupChat(ChatLeaveTheGroupInput chatLeaveTheGroupInput) {
-        if (userChatMapRepository.countByChatId(chatLeaveTheGroupInput.getGroupId()) > 1) {
-            userChatMapRepository.deleteByUserIdAndChatId(
-                    chatLeaveTheGroupInput.getUserId(),
-                    chatLeaveTheGroupInput.getGroupId()
-            );
-        } else {
-            userChatMapRepository.deleteByUserIdAndChatId(
-                    chatLeaveTheGroupInput.getUserId(),
-                    chatLeaveTheGroupInput.getGroupId()
-            );
-            chatRepository.deleteById(chatLeaveTheGroupInput.getGroupId());
-        }
+            return chatOutput;
+        });
     }
 }

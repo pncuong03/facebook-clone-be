@@ -1,12 +1,15 @@
 package com.example.Othellodifficult.service;
 
+import com.example.Othellodifficult.base.filter.Filter;
 import com.example.Othellodifficult.common.Common;
 import com.example.Othellodifficult.dto.friends.FriendRequestOutput;
+import com.example.Othellodifficult.dto.user.FriendSearchingOutput;
 import com.example.Othellodifficult.dto.user.UserOutput;
 import com.example.Othellodifficult.entity.*;
 import com.example.Othellodifficult.entity.friend.FriendMapEntity;
 import com.example.Othellodifficult.entity.friend.FriendRequestEntity;
 import com.example.Othellodifficult.entity.message.EventNotificationEntity;
+import com.example.Othellodifficult.mapper.UserMapper;
 import com.example.Othellodifficult.repository.*;
 import com.example.Othellodifficult.token.EventHelper;
 import com.example.Othellodifficult.token.TokenHelper;
@@ -16,11 +19,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -33,6 +34,39 @@ public class FriendsService {
     private final FriendMapRepository friendMapRepository;
     private final EventNotificationRepository eventNotificationRepository;
     private final ChatRepository chatRepository;
+    private final EntityManager entityManager;
+    private final UserMapper userMapper;
+
+    @Transactional(readOnly = true)
+    public Page<FriendSearchingOutput> findUsers(String search, String accessToken, Pageable pageable){
+        Long userId = TokenHelper.getUserIdFromToken(accessToken);
+        Page<UserEntity> userEntities = Filter.builder(UserEntity.class, entityManager)
+                .search()
+                .isContain("fullName", search)
+                .filter()
+                .isNotIn("id", Arrays.asList(userId))
+                .getPage(pageable);
+
+        if (userEntities.isEmpty()){
+            return Page.empty();
+        }
+        Map<Long, Long> friendMap = new HashMap<>();
+        List<FriendMapEntity> friendMapEntities = friendMapRepository.findAllByUserId(userId);
+        if (Objects.nonNull(friendMapEntities) && !friendMapEntities.isEmpty()){
+            friendMap = friendMapEntities.stream()
+                    .distinct()
+                    .collect(Collectors.toMap(FriendMapEntity::getId, FriendMapEntity::getId));
+        }
+
+        Map<Long, Long> finalFriendMap = friendMap;
+        return userEntities.map(
+                userEntity -> {
+                    FriendSearchingOutput friendSearching = userMapper.getFriendSearchingFrom(userEntity);
+                    friendSearching.setIsFriend(finalFriendMap.containsKey(friendSearching.getId()));
+                    return friendSearching;
+                }
+        );
+    }
 
     @Transactional(readOnly = true)
     public Page<UserOutput> getFriends(String accessToken, Pageable pageable) {
@@ -89,7 +123,7 @@ public class FriendsService {
             eventNotificationRepository.save(
                     EventNotificationEntity.builder()
                             .userId(receiveId)
-                            .eventType(Common.FRIEND_REQUEST)
+                            .eventType(Common.NOTIFICATION)
                             .state(Common.NEW_EVENT)
                             .build()
             );
@@ -115,7 +149,7 @@ public class FriendsService {
             eventNotificationRepository.save(
                     EventNotificationEntity.builder()
                             .userId(senderId)
-                            .eventType(Common.ACCEPT_FRIEND_REQUEST)
+                            .eventType(Common.NOTIFICATION)
                             .state(Common.NEW_EVENT)
                             .build()
             );
@@ -151,7 +185,11 @@ public class FriendsService {
     @Transactional(readOnly = true)
     public Page<FriendRequestOutput> getFriendRequests(String accessToken, Pageable pageable) {
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
-        Page<FriendRequestEntity> friendRequestEntityPage = friendRequestRepository.findAllByReceiverId(userId, pageable);
+        Page<FriendRequestEntity> friendRequestEntityPage = Filter.builder(FriendRequestEntity.class, entityManager)
+                .filter()
+                .isEqual("receiverId", userId)
+                .orderBy("createdAt", Common.DESC)
+                .getPage(pageable);
         if (Objects.isNull(friendRequestEntityPage) || friendRequestEntityPage.isEmpty()) {
             return Page.empty();
         }

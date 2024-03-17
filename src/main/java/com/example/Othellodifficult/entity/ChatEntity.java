@@ -23,4 +23,6 @@ public class ChatEntity {
     private Long userId1;
     @Column(name = "user_id2")
     private Long userId2;
+    private Boolean isMe;
+    private String newestMessage;
 }

@@ -8,9 +8,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.persistence.EntityManager;
-
-
 @RestController
 @RequestMapping("api/v1/event-notification")
 @AllArgsConstructor
@@ -18,7 +15,7 @@ public class EventNotificationController {
     private final EventNotificationService eventNotificationService;
 
     @GetMapping
-    public EventCountOutput getEvent(@RequestHeader(value = "Authorization") String accessToken){
+    public EventCountOutput getEvents(@RequestHeader(value = "Authorization") String accessToken){
         return eventNotificationService.getEvent(accessToken);
     }
 }

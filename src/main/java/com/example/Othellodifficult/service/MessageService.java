@@ -14,7 +14,6 @@ import com.example.Othellodifficult.token.TokenHelper;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -35,16 +34,21 @@ public class MessageService {
         LocalDateTime now = LocalDateTime.now();
         Long senderId = TokenHelper.getUserIdFromToken(accessToken);
         ChatEntity chatEntity = customRepository.getChat(messageInput.getChatId());
+        chatEntity.setIsMe(true);
+        chatEntity.setNewestMessage(messageInput.getMessage());
+        chatEntity.setNewestChatTime(now);
 
         MessageEntity messageEntity = messageMapper.getEntityFromInput(messageInput);
         messageEntity.setSenderId(senderId);
         messageEntity.setCreatedAt(LocalDateTime.now());
         Long chatId2;
-        if (chatEntity.getChatType().equals(Common.USER)) {
+        if (chatEntity.getChatType().equals(Common.USER)) { // 2
             ChatEntity chatEntity2 = newChatRepository.findByUserId1AndUserId2(chatEntity.getUserId2(), chatEntity.getUserId1());
             chatId2 = chatEntity2.getId();
             messageEntity.setChatId1(chatEntity.getId());
             messageEntity.setChatId2(chatEntity2.getId());
+            chatEntity2.setNewestMessage(messageInput.getMessage());
+            chatEntity2.setIsMe(false);
             chatEntity2.setNewestChatTime(now);
             newChatRepository.save(chatEntity2);
         } else {
@@ -53,7 +57,6 @@ public class MessageService {
         }
         messageRepository.save(messageEntity);
         CompletableFuture.runAsync(() -> {
-            chatEntity.setNewestChatTime(now);
             newChatRepository.save(chatEntity);
 
             // if chat user-user
@@ -64,6 +67,8 @@ public class MessageService {
                                 .userId(chatEntity.getUserId2())
                                 .state(Common.NEW_EVENT)
                                 .chatId(chatId2)
+                                .createdAt(now)
+                                .message(messageInput.getMessage())
                                 .build()
                 );
                 EventHelper.pushEventForUserByUserId(chatEntity.getUserId2());
@@ -79,6 +84,8 @@ public class MessageService {
                                         .userId(userChatEntity.getUserId())
                                         .state(Common.NEW_EVENT)
                                         .chatId(chatEntity.getId())
+                                        .createdAt(now)
+                                        .message(messageInput.getMessage())
                                         .build()
                         );
                         EventHelper.pushEventForUserByUserId(userChatEntity.getUserId());
