@@ -75,7 +75,34 @@ ALTER TABLE tbl_event_notification
 ALTER TABLE tbl_event_notification
     ADD COLUMN created_at TIMESTAMP;
 
-// đã gửi kết bạn chưa (api lấy danh sách người dùng)
+CREATE TABLE tbl_friend_request
+(
+    id          BIGSERIAL PRIMARY KEY,
+    sender_id   BIGINT REFERENCES tbl_user (id),
+    receiver_id BIGINT REFERENCES tbl_user (id),
+    created_at  TIMESTAMP
+);
+
+CREATE TABLE tbl_friend_map
+(
+    id        BIGSERIAL PRIMARY KEY,
+    user_id_1 BIGINT REFERENCES tbl_user (id),
+    user_id_2 BIGINT REFERENCES tbl_user (id)
+);
+
+CREATE TABLE tbl_post
+(
+    id            BIGSERIAL PRIMARY KEY,
+    user_id       BIGINT REFERENCES tbl_user (id),
+    content       VARCHAR,
+    image_urls    VARCHAR,
+    like_count    INTEGER,
+    comment_count INTEGER,
+    share_count   INTEGER,
+    share_id      BIGINT REFERENCES tbl_post (id),
+    state         VARCHAR,
+    created_at    TIMESTAMP
+);
 
 
 

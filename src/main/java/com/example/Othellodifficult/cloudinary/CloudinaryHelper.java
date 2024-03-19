@@ -61,7 +61,7 @@ public class CloudinaryHelper {
 //            Map uploadResults = cloudinary.uploader().uploadLarge(new ByteArrayInputStream(concatenateByteArrays(fileBytes)), ObjectUtils.emptyMap());
 //
 //            // Tạo danh sách để lưu trữ các URL
-//            List<String> fileUrls = new ArrayList<>();
+//            List<String> fileUrls = uploadResults.
 //
 //            // Trích xuất URL của từng tệp đã tải lên và thêm vào danh sách
 //            for (Map uploadResult : uploadResults) {
@@ -74,8 +74,8 @@ public class CloudinaryHelper {
 //            throw new RuntimeException("Failed to upload files: " + e.getMessage(), e);
 //        }
 //    }
-//
-//    // Phương thức này kết hợp mảng byte của tất cả các tệp thành một mảng byte duy nhất
+
+    // Phương thức này kết hợp mảng byte của tất cả các tệp thành một mảng byte duy nhất
 //    private static byte[] concatenateByteArrays(byte[][] arrays) {
 //        int totalLength = 0;
 //        for (byte[] array : arrays) {
