@@ -4,7 +4,6 @@ import com.example.Othellodifficult.entity.UserEntity;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-
 import java.util.Date;
 
 public class TokenHelper {

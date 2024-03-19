@@ -2,7 +2,6 @@ package com.example.Othellodifficult.controller;
 
 import com.example.Othellodifficult.dto.friends.FriendRequestOutput;
 import com.example.Othellodifficult.dto.user.UserOutput;
-import com.example.Othellodifficult.entity.UserEntity;
 import com.example.Othellodifficult.service.FriendsService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
