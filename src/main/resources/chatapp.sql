@@ -1,8 +1,26 @@
 CREATE TABLE tbl_user
 (
-    id       BIGSERIAL PRIMARY KEY,
-    username VARCHAR,
-    password VARCHAR
+    id        BIGSERIAL PRIMARY KEY,
+    username  VARCHAR,
+    password  VARCHAR,
+    full_name VARCHAR,
+    image_url VARCHAR,
+    birthday  TIMESTAMP,
+    gender    VARCHAR
+);
+
+CREATE TABLE tbl_post
+(
+    id            BIGSERIAL PRIMARY KEY,
+    user_id       BIGINT REFERENCES tbl_user (id),
+    content       VARCHAR,
+    image_urls    VARCHAR,
+    like_count    INTEGER,
+    comment_count INTEGER,
+    share_count   INTEGER,
+    share_id      BIGINT REFERENCES tbl_post (id),
+    state         VARCHAR,
+    created_at    TIMESTAMP
 );
 
 CREATE TABLE tbl_chat
@@ -14,6 +32,8 @@ CREATE TABLE tbl_chat
     newest_chat_time TIMESTAMP,
     user_id1         BIGINT REFERENCES tbl_user (id),
     user_id2         BIGINT REFERENCES tbl_user (id),
+    newest_user_id   BIGINT REFERENCES tbl_user (id),
+    newest_message   VARCHAR
 );
 
 CREATE TABLE tbl_user_chat_map
@@ -68,8 +88,6 @@ CREATE TABLE tbl_share_map
 
 ALTER TABLE tbl_chat
     ADD COLUMN is_me BOOLEAN;
-ALTER TABLE tbl_chat
-    ADD COLUMN newest_message VARCHAR;
 ALTER TABLE tbl_event_notification
     ADD COLUMN message VARCHAR;
 ALTER TABLE tbl_event_notification
@@ -90,20 +108,19 @@ CREATE TABLE tbl_friend_map
     user_id_2 BIGINT REFERENCES tbl_user (id)
 );
 
-CREATE TABLE tbl_post
+CREATE TABLE tbl_notification
 (
-    id            BIGSERIAL PRIMARY KEY,
-    user_id       BIGINT REFERENCES tbl_user (id),
-    content       VARCHAR,
-    image_urls    VARCHAR,
-    like_count    INTEGER,
-    comment_count INTEGER,
-    share_count   INTEGER,
-    share_id      BIGINT REFERENCES tbl_post (id),
-    state         VARCHAR,
-    created_at    TIMESTAMP
+    id BIGSERIAL PRIMARY KEY,
+    type VARCHAR,
+    user_id BIGINT REFERENCES tbl_user(id),
+    interact_id BIGINT REFERENCES tbl_user(id),
+    group_id BIGINT,
+    interact_type VARCHAR,
+    post_id BIGINT,
+    has_seen BOOLEAN,
+    created_at TIMESTAMP
 );
 
-
+ALTER TABLE tbl_chat ADD COLUMN image_url VARCHAR;
 
 

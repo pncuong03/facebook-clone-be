@@ -34,7 +34,7 @@ public class GroupController {
     }
 
     @Operation(summary = "Lấy danh sách thành viên trong nhóm")
-    @GetMapping("/members")
+    @GetMapping("/members") //
     public Page<GroupMemberOutPut> getGroupMemBer(@RequestParam Long groupId,
                                                   @RequestHeader("Authorization") String accessToken,
                                                   @ParameterObject Pageable pageable) {

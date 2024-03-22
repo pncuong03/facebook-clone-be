@@ -1,5 +1,6 @@
 package com.example.Othellodifficult.service;
 
+import com.example.Othellodifficult.cloudinary.CloudinaryHelper;
 import com.example.Othellodifficult.common.Common;
 import com.example.Othellodifficult.dto.post.CreatePostInput;
 import com.example.Othellodifficult.dto.post.PostOutput;
@@ -18,7 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -90,27 +91,28 @@ public class PostService {
     }
 
     @Transactional
-    public void creatPost(String accessToken, CreatePostInput createPostInput) {
+    public void creatPost(String accessToken, CreatePostInput createPostInput, List<MultipartFile> multipartFiles) {
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
         PostEntity postEntity = postMapper.getEntityFromInput(createPostInput);
-        postEntity.setImageUrlsString(StringUtils.convertListToString(createPostInput.getImageUrls()));
+        postEntity.setImageUrlsString(StringUtils.convertListToString(getImageUrls(multipartFiles)));
         postEntity.setUserId(userId);
         postEntity.setLikeCount(0);
         postEntity.setCommentCount(0);
         postEntity.setShareCount(0);
         postEntity.setCreatedAt(LocalDateTime.now());
+        // postEntity.setType(USER)
         postRepository.save(postEntity);
     }
 
     @Transactional
-    public void updatePost(String accessToken, Long postId, CreatePostInput updatePostInput) {
+    public void updatePost(String accessToken, Long postId, CreatePostInput updatePostInput, List<MultipartFile> multipartFiles) {
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
         PostEntity postEntity = customRepository.getPost(postId);
         if (!userId.equals(postEntity.getUserId())) {
             throw new RuntimeException(Common.ACTION_FAIL);
         }
         postMapper.updateEntityFromInput(postEntity, updatePostInput);
-        postEntity.setImageUrlsString(StringUtils.convertListToString(updatePostInput.getImageUrls()));
+        postEntity.setImageUrlsString(StringUtils.convertListToString(getImageUrls(multipartFiles)));
         postRepository.save(postEntity);
     }
 
@@ -124,10 +126,10 @@ public class PostService {
         postRepository.delete(postEntity);
     }
 
-    @Transactional // phu -> phuc -> phong
+    @Transactional
     public void sharePost(String accessToken, Long shareId, CreatePostInput sharePostInput) {
-        Long userId = TokenHelper.getUserIdFromToken(accessToken); // userId = phong
-        PostEntity postEntity = customRepository.getPost(shareId); // phuc
+        Long userId = TokenHelper.getUserIdFromToken(accessToken);
+        PostEntity postEntity = customRepository.getPost(shareId);
         if (Objects.nonNull(postEntity.getShareId())) {
             shareId = postEntity.getShareId();
             notificationRepository.save(
@@ -239,5 +241,16 @@ public class PostService {
                     return postOutput;
                 }
         );
+    }
+
+    private List<String> getImageUrls(List<MultipartFile> multipartFiles){
+        if (Objects.isNull(multipartFiles) || multipartFiles.isEmpty()){
+            return new ArrayList<>();
+        }
+        List<String> imageUrls = new ArrayList<>();
+        for (MultipartFile multipartFile : multipartFiles){
+            imageUrls.add(CloudinaryHelper.uploadAndGetFileUrl(multipartFile));
+        }
+        return imageUrls;
     }
 }

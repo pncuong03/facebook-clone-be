@@ -9,8 +9,10 @@ import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("api/v1/post")
@@ -28,16 +30,18 @@ public class PostController {
     @Operation(summary = "Đăng bài viết")
     @PostMapping("/post")
     public void creatPost(@RequestHeader("Authorization") String accessToken,
-                          @RequestBody @Valid CreatePostInput createPostInput){
-        postService.creatPost(accessToken, createPostInput);
+                          @RequestBody @Valid CreatePostInput createPostInput,
+                          @RequestParam(name = "images") List<MultipartFile> multipartFiles){
+        postService.creatPost(accessToken, createPostInput, multipartFiles);
     }
 
     @Operation(summary = "Sửa bài viết")
     @PutMapping("/update")
     public void updatePost(@RequestHeader("Authorization") String accessToken,
                            @RequestParam Long postId,
-                           @RequestBody @Valid CreatePostInput updatePostInput){
-        postService.updatePost(accessToken, postId, updatePostInput);
+                           @RequestBody @Valid CreatePostInput updatePostInput,
+                           @RequestParam(name = "images") List<MultipartFile> multipartFiles){
+        postService.updatePost(accessToken, postId, updatePostInput, multipartFiles);
     }
 
     @Operation(summary = "Xóa bài viết")

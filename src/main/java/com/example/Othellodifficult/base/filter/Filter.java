@@ -38,7 +38,8 @@ public class Filter<T> {
         private Integer paramCount;
         private StringBuilder conditions;
         private String orderBy;
-
+        private Boolean mustOpenParentheses;
+        private Boolean mustCloseParentheses;
 
         public FilterBuilder(Class<T> clazz, EntityManager entityManager) {
             entityClazz = clazz;
@@ -48,17 +49,29 @@ public class Filter<T> {
             paramCount = 1;
             conditions = new StringBuilder();
             orderBy = "";
+            mustOpenParentheses = false;
+            mustCloseParentheses = false;
         }
 
         @Override
         public FilterBuilder<T> search() {
             logicOperator = " OR ";
+            mustOpenParentheses = true;
+            if (Boolean.TRUE.equals(mustCloseParentheses)){
+                conditions.append(" ) ");
+            }
+            mustCloseParentheses = false;
             return this;
         }
 
         @Override
         public FilterBuilder<T> filter() {
             logicOperator = " AND ";
+            mustOpenParentheses = true;
+            if (Boolean.TRUE.equals(mustCloseParentheses)){
+                conditions.append(" ) ");
+            }
+            mustCloseParentheses = false;
             return this;
         }
 
@@ -68,7 +81,12 @@ public class Filter<T> {
                 return this;
             }
             paramMap.put(paramCount, "%" + escape(value) + "%");
-            conditions.append(this.logicOperator).append("e.").append(fieldName).append(" LIKE ?").append(paramCount++);
+            conditions.append(Boolean.TRUE.equals(mustOpenParentheses) ? this.logicOperator + " ( " : this.logicOperator)
+                    .append("e.").append(fieldName).append(" LIKE ?").append(paramCount++);
+            if (Boolean.TRUE.equals(mustOpenParentheses)){
+                mustOpenParentheses = false;
+            }
+            mustCloseParentheses = true;
             return this;
         }
 
@@ -78,7 +96,12 @@ public class Filter<T> {
                 return this;
             }
             paramMap.put(paramCount, values);
-            conditions.append(this.logicOperator).append("e.").append(fieldName).append(" NOT IN (?").append(paramCount++).append(")");
+            conditions.append(Boolean.TRUE.equals(mustOpenParentheses) ? this.logicOperator + " ( " : this.logicOperator)
+                    .append("e.").append(fieldName).append(" NOT IN (?").append(paramCount++).append(")");
+            if (Boolean.TRUE.equals(mustOpenParentheses)){
+                mustOpenParentheses = false;
+            }
+            mustCloseParentheses = true;
             return this;
         }
 
@@ -88,7 +111,12 @@ public class Filter<T> {
                 return this;
             }
             paramMap.put(paramCount, values);
-            conditions.append(this.logicOperator).append("e.").append(fieldName).append(" IN (?").append(paramCount++).append(")");
+            conditions.append(Boolean.TRUE.equals(mustOpenParentheses) ? this.logicOperator + " ( " : this.logicOperator)
+                    .append("e.").append(fieldName).append(" IN (?").append(paramCount++).append(")");
+            if (Boolean.TRUE.equals(mustOpenParentheses)){
+                mustOpenParentheses = false;
+            }
+            mustCloseParentheses = true;
             return this;
         }
 
@@ -98,13 +126,40 @@ public class Filter<T> {
                 return this;
             }
             paramMap.put(paramCount, value);
-            conditions.append(this.logicOperator).append("e.").append(fieldName).append(" = ?").append(paramCount++);
+            conditions.append(Boolean.TRUE.equals(mustOpenParentheses) ? this.logicOperator + " ( " : this.logicOperator)
+                    .append("e.").append(fieldName).append(" = ?").append(paramCount++);
+            if (Boolean.TRUE.equals(mustOpenParentheses)){
+                mustOpenParentheses = false;
+            }
+            mustCloseParentheses = true;
             return this;
         }
 
         @Override
         public FilterBuilder<T> orderBy(String fieldName, String orderType) {
             orderBy = " ORDER BY e." + fieldName + " " + orderType;
+            return this;
+        }
+
+        @Override
+        public FilterBuilder<T> isNull(String fieldName) {
+            conditions.append(Boolean.TRUE.equals(mustOpenParentheses) ? this.logicOperator + " ( " : this.logicOperator)
+                    .append("e.").append(fieldName).append(" IS NULL ");
+            if (Boolean.TRUE.equals(mustOpenParentheses)){
+                mustOpenParentheses = false;
+            }
+            mustCloseParentheses = true;
+            return this;
+        }
+
+        @Override
+        public FilterBuilder isNotNull(String fieldName) {
+            conditions.append(Boolean.TRUE.equals(mustOpenParentheses) ? this.logicOperator + " ( " : this.logicOperator)
+                    .append("e.").append(fieldName).append(" IS NOT NULL ");
+            if (Boolean.TRUE.equals(mustOpenParentheses)){
+                mustOpenParentheses = false;
+            }
+            mustCloseParentheses = true;
             return this;
         }
 
@@ -148,8 +203,10 @@ public class Filter<T> {
                 else if (newConditions.startsWith(" OR")){
                     newConditions = newConditions.substring(3);
                 }
-                query.append("WHERE ").append(newConditions);
+                query.append("WHERE ").append(newConditions)
+                        .append(Boolean.TRUE.equals(mustCloseParentheses) ? ")" : "");
             }
+            System.out.println(query);
             return entityManager.createQuery(new String(query), entityClazz);
         }
 

@@ -36,9 +36,11 @@ public class FriendsService {
     private final ChatRepository chatRepository;
     private final EntityManager entityManager;
     private final UserMapper userMapper;
+    private final NotificationRepository notificationRepository;
+    private final CustomRepository customRepository;
 
     @Transactional(readOnly = true)
-    public Page<FriendSearchingOutput> findUsers(String search, String accessToken, Pageable pageable){
+    public Page<FriendSearchingOutput> findUsers(String search, String accessToken, Pageable pageable) {
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
         Page<UserEntity> userEntities = Filter.builder(UserEntity.class, entityManager)
                 .search()
@@ -47,12 +49,12 @@ public class FriendsService {
                 .isNotIn("id", Arrays.asList(userId))
                 .getPage(pageable);
 
-        if (userEntities.isEmpty()){
+        if (userEntities.isEmpty()) {
             return Page.empty();
         }
         Map<Long, Long> friendMap = new HashMap<>();
         List<FriendMapEntity> friendMapEntities = friendMapRepository.findAllByUserId(userId);
-        if (Objects.nonNull(friendMapEntities) && !friendMapEntities.isEmpty()){
+        if (Objects.nonNull(friendMapEntities) && !friendMapEntities.isEmpty()) {
             friendMap = friendMapEntities.stream()
                     .distinct()
                     .collect(Collectors.toMap(FriendMapEntity::getId, FriendMapEntity::getId));
@@ -127,6 +129,15 @@ public class FriendsService {
                             .state(Common.NEW_EVENT)
                             .build()
             );
+            notificationRepository.save(
+                    NotificationEntity.builder()
+                            .userId(receiveId)
+                            .interactId(senderId)
+                            .interactType(Common.FRIEND_REQUEST)
+                            .hasSeen(false)
+                            .createdAt(LocalDateTime.now())
+                            .build()
+            );
         });
     }
 
@@ -153,26 +164,41 @@ public class FriendsService {
                             .state(Common.NEW_EVENT)
                             .build()
             );
+            notificationRepository.save(
+                    NotificationEntity.builder()
+                            .userId(senderId)
+                            .interactId(receiverId)
+                            .interactType(Common.ACCEPT_FRIEND_REQUEST)
+                            .hasSeen(false)
+                            .createdAt(LocalDateTime.now())
+                            .build()
+            );
         });
 
-//        CompletableFuture.runAsync(() -> {
-            chatRepository.save(
-                    ChatEntity.builder()
-                            .chatType(Common.USER)
-                            .userId1(receiverId)
-                            .userId2(senderId)
-                            .build()
-            );
+        UserEntity receiver = customRepository.getUser(receiverId);
+        UserEntity sender = customRepository.getUser(senderId);
+
+        chatRepository.save(
+                ChatEntity.builder()
+                        .name(receiver.getFullName())
+                        .imageUrl(receiver.getImageUrl())
+                        .chatType(Common.USER)
+                        .userId1(receiverId)
+                        .userId2(senderId)
+                        .build()
+        );
 
 
-            chatRepository.save(
-                    ChatEntity.builder()
-                            .chatType(Common.USER)
-                            .userId2(receiverId)
-                            .userId1(senderId)
-                            .build()
-            );
-//        });
+        chatRepository.save(
+                ChatEntity.builder()
+                        .name(sender.getFullName())
+                        .imageUrl(sender.getImageUrl())
+                        .chatType(Common.USER)
+                        .userId2(receiverId)
+                        .userId1(senderId)
+                        .build()
+        );
+
         EventHelper.pushEventForUserByUserId(senderId);
     }
 
