@@ -11,7 +11,6 @@ import java.util.List;
 @NoArgsConstructor
 public class CreatePostInput {
     private String content;
-    private List<String> imageUrls;
     @Pattern(regexp = "^(PRIVATE|PUBLIC)")
     private String state;
 }

@@ -74,8 +74,8 @@ public class CloudinaryHelper {
 //            throw new RuntimeException("Failed to upload files: " + e.getMessage(), e);
 //        }
 //    }
-
-    // Phương thức này kết hợp mảng byte của tất cả các tệp thành một mảng byte duy nhất
+//
+//     Phương thức này kết hợp mảng byte của tất cả các tệp thành một mảng byte duy nhất
 //    private static byte[] concatenateByteArrays(byte[][] arrays) {
 //        int totalLength = 0;
 //        for (byte[] array : arrays) {

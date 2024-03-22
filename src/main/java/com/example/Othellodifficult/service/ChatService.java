@@ -5,6 +5,7 @@ import com.example.Othellodifficult.common.Common;
 import com.example.Othellodifficult.dto.chat.ChatOutput;
 import com.example.Othellodifficult.dto.message.MessageOutput;
 import com.example.Othellodifficult.entity.ChatEntity;
+import com.example.Othellodifficult.entity.PostEntity;
 import com.example.Othellodifficult.entity.UserChatMapEntity;
 import com.example.Othellodifficult.entity.UserEntity;
 import com.example.Othellodifficult.entity.message.EventNotificationEntity;
@@ -12,6 +13,7 @@ import com.example.Othellodifficult.entity.message.MessageEntity;
 import com.example.Othellodifficult.mapper.ChatMapper;
 import com.example.Othellodifficult.mapper.MessageMapper;
 import com.example.Othellodifficult.repository.*;
+import com.example.Othellodifficult.token.EventHelper;
 import com.example.Othellodifficult.token.TokenHelper;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -24,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -34,15 +37,17 @@ public class ChatService {
     private final UserChatRepository userChatMapRepository;
     private final ChatMapper chatMapper;
     private final EventNotificationRepository eventNotificationRepository;
-    private final MessageRepository messageRepository;
     private final CustomRepository customRepository;
     private final UserChatRepository userChatRepository;
     private final UserRepository userRepository;
     private final MessageMapper messageMapper;
 
-    @Transactional(readOnly = true)
+    @Transactional
     public Page<MessageOutput> getMessages(String accessToken, Long chatId, Pageable pageable) {
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
+
+        eventNotificationRepository.deleteAllByUserIdAndChatId(userId, chatId);
+
         Page<MessageEntity> messageEntities = Filter.builder(MessageEntity.class, entityManager)
                 .search()
                 .isEqual("chatId1", chatId)
@@ -69,7 +74,7 @@ public class ChatService {
         return messageEntities.map(
                 messageEntity -> {
                     MessageOutput messageOutput = messageMapper.getOutputFromEntity(messageEntity);
-                    if (userEntityMap.containsKey(messageEntity.getSenderId())){
+                    if (userEntityMap.containsKey(messageEntity.getSenderId())) {
                         UserEntity userEntity = userEntityMap.get(messageEntity.getSenderId());
                         messageOutput.setUserId(userEntity.getId());
                         messageOutput.setFullName(userEntity.getFullName());
@@ -98,12 +103,13 @@ public class ChatService {
                 .isEqual("userId1", userId)
                 .filter()
                 .isContain("name", search)
+                .isNotNull("newestChatTime")
                 .orderBy("newestChatTime", Common.DESC)
                 .getPage(pageable);
 
-        chatIds = chatEntities.stream().map(ChatEntity::getId).collect(Collectors.toList());
-        Map<Long, List<EventNotificationEntity>> eventNotificationMap = eventNotificationRepository.findAllByIdIn(chatIds).stream()
-                .collect(Collectors.groupingBy(EventNotificationEntity::getChatId));
+        Map<Long, List<EventNotificationEntity>> eventNotificationMap =
+                eventNotificationRepository.findAllByUserIdAndEventType(userId, Common.MESSAGE).stream()
+                        .collect(Collectors.groupingBy(EventNotificationEntity::getChatId));
 
         return chatEntities.map(chatEntity -> {
             ChatOutput chatOutput = chatMapper.getOutputFromEntity(chatEntity);
@@ -112,6 +118,7 @@ public class ChatService {
             } else {
                 chatOutput.setMessageCount(0);
             }
+            chatOutput.setIsMe(userId.equals(chatEntity.getNewestUserId()));
             return chatOutput;
         });
     }

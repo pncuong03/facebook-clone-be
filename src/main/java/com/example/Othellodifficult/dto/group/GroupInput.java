@@ -17,5 +17,5 @@ public class GroupInput {
     @Size(min = 1)
     private List<Long> userIds;
     @Size(min = 1)
-    private List<Long> tagIds;
+    private List<Long> tagIds; // db : tiếng anh, game, tiếng nhật ...
 }

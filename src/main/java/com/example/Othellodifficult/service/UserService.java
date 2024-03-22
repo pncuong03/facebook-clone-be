@@ -1,5 +1,6 @@
 package com.example.Othellodifficult.service;
 
+import com.example.Othellodifficult.cloudinary.CloudinaryHelper;
 import com.example.Othellodifficult.common.Common;
 import com.example.Othellodifficult.dto.user.ChangeInfoUserRequest;
 import com.example.Othellodifficult.dto.user.UserOutputV2;
@@ -12,7 +13,9 @@ import lombok.AllArgsConstructor;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.time.OffsetDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -36,10 +39,14 @@ public class UserService {
     }
 
     @Transactional
-    public void changeUserInformation(ChangeInfoUserRequest changeInfoUserRequest, String accessToken){
+    public void changeUserInformation(ChangeInfoUserRequest changeInfoUserRequest,
+                                      String accessToken,
+                                      MultipartFile multipartFile){
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
         UserEntity userEntity = getUserBy(userId);
         userMapper.updateEntityFromInput(userEntity, changeInfoUserRequest);
+        userEntity.setBirthday(OffsetDateTime.parse(changeInfoUserRequest.getBirthdayString()));
+        userEntity.setImageUrl(CloudinaryHelper.uploadAndGetFileUrl(multipartFile));
         userRepository.save(userEntity);
     }
 
@@ -50,6 +57,7 @@ public class UserService {
         }
         signUpRequest.setPassword(BCrypt.hashpw(signUpRequest.getPassword(), BCrypt.gensalt()));
         UserEntity userEntity = userMapper.getEntityFromRequest(signUpRequest);
+        userEntity.setImageUrl(Common.DEFAULT_IMAGE_URL);
         UUID uuid = UUID.randomUUID();
         userEntity.setFullName(Common.USER + "_" + uuid);
         userRepository.save(userEntity);

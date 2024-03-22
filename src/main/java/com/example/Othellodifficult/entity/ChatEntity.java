@@ -23,6 +23,8 @@ public class ChatEntity {
     private Long userId1;
     @Column(name = "user_id2")
     private Long userId2;
-    private Boolean isMe;
+//    private Boolean isMe;
+    private Long newestUserId;
     private String newestMessage;
+    private String imageUrl;
 }

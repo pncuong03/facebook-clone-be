@@ -37,38 +37,36 @@ public class NotificationService {
 
     // thread != method thread
     @Transactional
-    public Page<NotificationOutput> getNotifies(String accessToken, Pageable pageable){
-        CompletableFuture.runAsync(() -> {
-
-        });
-
+    public Page<NotificationOutput> getNotifies(String accessToken, Pageable pageable) {
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
+        eventNotificationRepository.deleteAllByUserIdAndEventType(userId, Common.NOTIFICATION);
+
         Page<NotificationEntity> notificationEntities = Filter.builder(NotificationEntity.class, entityManager)
                 .filter()
                 .isEqual("userId", userId)
                 .orderBy("createdAt", Common.DESC)
                 .getPage(pageable);
 
-        if (notificationEntities.isEmpty()){
+        if (notificationEntities.isEmpty()) {
             return Page.empty();
         }
 
         Set<Long> userIds = new HashSet<>();
         List<NotificationEntity> noSeenNotifyEntities = new ArrayList<>();
-        for (NotificationEntity notificationEntity : notificationEntities){
-            if (Objects.nonNull(notificationEntity.getInteractId())){
+        for (NotificationEntity notificationEntity : notificationEntities) {
+            if (Objects.nonNull(notificationEntity.getInteractId())) {
                 userIds.add(notificationEntity.getInteractId());
             }
-            if (Boolean.FALSE.equals(notificationEntity.getHasSeen())){
+            if (Boolean.FALSE.equals(notificationEntity.getHasSeen())) {
                 noSeenNotifyEntities.add(notificationEntity);
             }
         }
         Map<Long, UserEntity> interactMap = userRepository.findAllByIdIn(userIds).stream()
                 .collect(Collectors.toMap(UserEntity::getId, Function.identity()));
 
-        if (!noSeenNotifyEntities.isEmpty()){
+        if (!noSeenNotifyEntities.isEmpty()) {
             CompletableFuture.runAsync(() -> {
-                for (NotificationEntity notificationEntity : noSeenNotifyEntities){
+                for (NotificationEntity notificationEntity : noSeenNotifyEntities) {
                     notificationEntity.setHasSeen(true);
                     notificationRepository.save(notificationEntity);
                 }
@@ -77,7 +75,7 @@ public class NotificationService {
 
         return notificationEntities.map(notificationEntity -> {
             NotificationOutput notificationOutput = notificationMapper.getOutputFromEntity(notificationEntity);
-            if (Objects.nonNull(notificationEntity.getInteractId())){
+            if (Objects.nonNull(notificationEntity.getInteractId())) {
                 UserEntity interact = interactMap.get(notificationEntity.getInteractId());
                 notificationOutput.setInteract(
                         UserOutput.builder()
