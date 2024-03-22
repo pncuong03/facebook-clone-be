@@ -34,7 +34,7 @@ public class MessageService {
         LocalDateTime now = LocalDateTime.now();
         Long senderId = TokenHelper.getUserIdFromToken(accessToken);
         ChatEntity chatEntity = customRepository.getChat(messageInput.getChatId());
-        chatEntity.setIsMe(true);
+        chatEntity.setNewestUserId(senderId);
         chatEntity.setNewestMessage(messageInput.getMessage());
         chatEntity.setNewestChatTime(now);
 
@@ -42,13 +42,13 @@ public class MessageService {
         messageEntity.setSenderId(senderId);
         messageEntity.setCreatedAt(LocalDateTime.now());
         Long chatId2;
-        if (chatEntity.getChatType().equals(Common.USER)) { // 2
+        if (chatEntity.getChatType().equals(Common.USER)) {
             ChatEntity chatEntity2 = newChatRepository.findByUserId1AndUserId2(chatEntity.getUserId2(), chatEntity.getUserId1());
             chatId2 = chatEntity2.getId();
             messageEntity.setChatId1(chatEntity.getId());
             messageEntity.setChatId2(chatEntity2.getId());
             chatEntity2.setNewestMessage(messageInput.getMessage());
-            chatEntity2.setIsMe(false);
+            chatEntity2.setNewestUserId(senderId);
             chatEntity2.setNewestChatTime(now);
             newChatRepository.save(chatEntity2);
         } else {

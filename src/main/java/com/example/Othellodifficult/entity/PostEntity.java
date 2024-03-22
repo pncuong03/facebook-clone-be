@@ -20,13 +20,10 @@ public class PostEntity {
     private String content;
     @Column(name = "image_urls")
     private String imageUrlsString;
-
     private Integer likeCount;
     private Integer commentCount;
     private Integer shareCount;
-
     private Long shareId;
     private String state;
-
     private LocalDateTime createdAt;
 }

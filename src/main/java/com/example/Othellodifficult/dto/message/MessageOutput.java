@@ -11,10 +11,10 @@ import java.time.LocalDateTime;
 @Builder
 public class MessageOutput {
     private Long id;
-    private Long userId;//
+    private Long userId;
     private String message;
-    private String fullName;//
-    private String imageUrl;//
+    private String fullName;
+    private String imageUrl;
     private LocalDateTime createdAt;
-    private Boolean isMe;//
+    private Boolean isMe;
 }

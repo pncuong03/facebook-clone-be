@@ -12,4 +12,5 @@ public class GroupMemberOutPut {
     private String fullName;
     private String imageUrl;
     private String positionInGroup;
+    //
 }

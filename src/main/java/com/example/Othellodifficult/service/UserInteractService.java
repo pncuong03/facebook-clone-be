@@ -38,6 +38,8 @@ public class UserInteractService {
     private final EventNotificationRepository eventNotificationRepository;
     private final NotificationRepository notificationRepository;
 
+    // tbl_post
+
     @Transactional
     public void like(Long postId, String accessToken) {
         Long userId = TokenHelper.getUserIdFromToken(accessToken);

@@ -13,7 +13,6 @@ import java.time.OffsetDateTime;
 @NoArgsConstructor
 public class ChangeInfoUserRequest {
     private String fullName;
-    private String imageUrl;
-    private OffsetDateTime birthday;
+    private String birthdayString;
     private String gender;
 }

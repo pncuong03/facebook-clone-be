@@ -25,9 +25,9 @@ public class EventNotificationService {
     private final NotificationMapper notificationMapper;
 
     @Transactional
-    public EventCountOutput getEvent(String accessToken) { // id = 1
+    public EventCountOutput getEvent(String accessToken) {
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
-        if (!map1.containsKey(userId)){ // userId = 1
+        if (!map1.containsKey(userId)){
             System.out.println("FIRST CONNECT OF USER " + userId);
             List<EventNotificationEntity> eventNotificationEntities = eventNotificationRepository.findAllByUserId(userId);
             map1.put(userId, eventNotificationEntities.size());
