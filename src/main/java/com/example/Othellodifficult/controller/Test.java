@@ -1,11 +1,9 @@
 package com.example.Othellodifficult.controller;
 
 import com.example.Othellodifficult.cloudinary.CloudinaryHelper;
+import com.example.Othellodifficult.dto.IdAndName;
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
