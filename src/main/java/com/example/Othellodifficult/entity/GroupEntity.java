@@ -15,7 +15,6 @@ public class GroupEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long managerGroupId;
     private String name;
     private Integer memberCount;
 }
