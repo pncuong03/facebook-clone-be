@@ -26,4 +26,6 @@ public class PostEntity {
     private Long shareId;
     private String state;
     private LocalDateTime createdAt;
+    private String type; // GROUP/USER
+    private Long groupId;
 }

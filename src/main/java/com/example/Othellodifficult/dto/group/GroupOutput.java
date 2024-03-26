@@ -13,6 +13,6 @@ public class GroupOutput {
     private Long id;
     private String name;
     private Integer memberCount;
-    private Boolean isMember;
-    private Boolean isRequested;
+//    private Boolean isMember;
+//    private Boolean isRequested;
 }

@@ -10,7 +10,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 @Entity
 @Builder
-@Table(name = "tbl_group_tag_map_entity")
+@Table(name = "tbl_group_tag_map")
 public class GroupTagMapEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

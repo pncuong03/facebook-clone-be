@@ -11,6 +11,6 @@ public class GroupMemberOutPut {
     private Long id;
     private String fullName;
     private String imageUrl;
-    private String positionInGroup;
+    private String role;
     //
 }

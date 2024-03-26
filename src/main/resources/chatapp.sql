@@ -110,17 +110,43 @@ CREATE TABLE tbl_friend_map
 
 CREATE TABLE tbl_notification
 (
-    id BIGSERIAL PRIMARY KEY,
-    type VARCHAR,
-    user_id BIGINT REFERENCES tbl_user(id),
-    interact_id BIGINT REFERENCES tbl_user(id),
-    group_id BIGINT,
+    id            BIGSERIAL PRIMARY KEY,
+    type          VARCHAR,
+    user_id       BIGINT REFERENCES tbl_user (id),
+    interact_id   BIGINT REFERENCES tbl_user (id),
+    group_id      BIGINT,
     interact_type VARCHAR,
-    post_id BIGINT,
-    has_seen BOOLEAN,
-    created_at TIMESTAMP
+    post_id       BIGINT,
+    has_seen      BOOLEAN,
+    created_at    TIMESTAMP
 );
 
-ALTER TABLE tbl_chat ADD COLUMN image_url VARCHAR;
+ALTER TABLE tbl_chat
+    ADD COLUMN image_url VARCHAR;
 
+create table tbl_tag
+(
+    id   bigserial primary key,
+    name varchar
+)
 
+create table tbl_group
+(
+    id           BIGSERIAL PRIMARY KEY,
+    user_id      BIGSERIAL,
+    name         VARCHAR,
+    member_count INTEGER,
+    role         VARCHAR
+)
+create table tbl_group_tag_map
+(
+    id       bigserial primary key,
+    group_id bigserial references tbl_group (id),
+    tag_id   bigserial references tbl_tag (id)
+)
+create table tbl_user_group_map(
+                                   id bigserial primary key,
+                                   user_id bigserial references tbl_user(id),
+                                   group_id bigserial references tbl_group(id),
+                                   role varchar
+)

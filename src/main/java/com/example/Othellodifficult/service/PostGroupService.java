@@ -2,6 +2,7 @@ package com.example.Othellodifficult.service;
 
 import com.example.Othellodifficult.cloudinary.CloudinaryHelper;
 import com.example.Othellodifficult.common.Common;
+import com.example.Othellodifficult.dto.post.CreatePostGroupInput;
 import com.example.Othellodifficult.dto.post.CreatePostInput;
 import com.example.Othellodifficult.dto.post.PostOutput;
 import com.example.Othellodifficult.entity.LikeMapEntity;
@@ -28,7 +29,7 @@ import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
-public class PostService {
+public class PostGroupService {
     private final PostMapper postMapper;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
@@ -36,49 +37,12 @@ public class PostService {
     private final FriendMapRepository friendMapRepository;
     private final CustomRepository customRepository;
     private final NotificationRepository notificationRepository;
+    private final UserGroupMapRepository userGroupMapRepository;
 
     @Transactional(readOnly = true)
-    public Page<PostOutput> getPostsOfFriends(String accessToken, Pageable pageable) {
+    public Page<PostOutput> getPostGroup(String accessToken,Long groupId, Pageable pageable) {
+        Page<PostEntity> postEntityPage = postRepository.findAllByGroupId(groupId, pageable);
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
-        List<FriendMapEntity> friendMapEntities = friendMapRepository.findAllByUserId(userId);
-        Set<Long> friendIds = new HashSet<>();
-        for (FriendMapEntity friendMapEntity : friendMapEntities) {
-            friendIds.add(friendMapEntity.getUserId1());
-            friendIds.add(friendMapEntity.getUserId2());
-        }
-        friendIds = friendIds.stream().filter(id -> !id.equals(userId)).collect(Collectors.toSet());
-
-        Page<PostEntity> postEntitiesOfFriends = postRepository.findAllByUserIdInAndState(friendIds, Common.PUBLIC, pageable);
-        if (Objects.isNull(postEntitiesOfFriends) || postEntitiesOfFriends.isEmpty()) {
-            return Page.empty();
-        }
-
-        Map<Long, UserEntity> friendMapEntityMap = userRepository.findAllByIdIn(
-                        postEntitiesOfFriends.stream().map(PostEntity::getUserId).distinct().collect(Collectors.toList())
-                ).stream()
-                .collect(Collectors.toMap(UserEntity::getId, Function.identity()));
-
-        return setHasLikeForPosts(userId, mapResponsePostPage(postEntitiesOfFriends, friendMapEntityMap));
-    }
-
-    @Transactional(readOnly = true)
-    public Page<PostOutput> getPostsByUserId(Long userId, String accessToken, Pageable pageable){
-        Page<PostEntity> postEntityPage = postRepository.findAllByUserIdAndState(userId, Common.PUBLIC, pageable);
-        if (Objects.isNull(postEntityPage) || postEntityPage.isEmpty()) {
-            return Page.empty();
-        }
-        UserEntity userEntity = userRepository.findById(userId).orElseThrow(
-                () -> new RuntimeException(Common.RECORD_NOT_FOUND)
-        );
-        Map<Long, UserEntity> userEntityMap = new HashMap<>();
-        userEntityMap.put(userEntity.getId(), userEntity);
-        return setHasLikeForPosts(TokenHelper.getUserIdFromToken(accessToken), mapResponsePostPage(postEntityPage, userEntityMap));
-    }
-
-    @Transactional(readOnly = true)
-    public Page<PostOutput> getMyPosts(String accessToken, Pageable pageable) {
-        Long userId = TokenHelper.getUserIdFromToken(accessToken);
-        Page<PostEntity> postEntityPage = postRepository.findAllByUserId(userId, pageable);
         if (Objects.isNull(postEntityPage) || postEntityPage.isEmpty()) {
             return Page.empty();
         }
@@ -91,19 +55,19 @@ public class PostService {
     }
 
     @Transactional
-    public void creatPost(String accessToken, CreatePostInput createPostInput, List<MultipartFile> multipartFiles) {
+    public void creatPost(String accessToken, CreatePostGroupInput createPostGroupInput/*List<MultipartFile> multipartFiles*/) {
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
-        PostEntity postEntity = postMapper.getEntityFromInput(createPostInput);
-        postEntity.setImageUrlsString(StringUtils.convertListToString(getImageUrls(multipartFiles)));
+        PostEntity postEntity = postMapper.getEntityFromInput(createPostGroupInput);
+//        postEntity.setImageUrlsString(StringUtils.convertListToString(getImageUrls(multipartFiles)));
         postEntity.setUserId(userId);
         postEntity.setLikeCount(0);
         postEntity.setCommentCount(0);
         postEntity.setShareCount(0);
         postEntity.setCreatedAt(LocalDateTime.now());
-         postEntity.setType(Common.USER);
+        postEntity.setType(Common.GROUP);
+        postEntity.setImageUrlsString("Anh");
         postRepository.save(postEntity);
     }
-
     @Transactional
     public void updatePost(String accessToken, Long postId, CreatePostInput updatePostInput, List<MultipartFile> multipartFiles) {
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
@@ -117,10 +81,11 @@ public class PostService {
     }
 
     @Transactional
-    public void deletePost(String accessToken, Long postId) {
+    public void deletePost(String accessToken, Long postId, Long groupId) {
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
+        Long adminId = userGroupMapRepository.findByGroupIdAndRole(groupId, Common.ADMIN).getUserId();
         PostEntity postEntity = customRepository.getPost(postId);
-        if (!userId.equals(postEntity.getUserId())) {
+        if (!userId.equals(postEntity.getUserId()) || !userId.equals(adminId)) {
             throw new RuntimeException(Common.ACTION_FAIL);
         }
         postRepository.delete(postEntity);
@@ -167,13 +132,12 @@ public class PostService {
     }
 
     private Page<PostOutput> mapResponsePostPage(Page<PostEntity> postEntityPage, Map<Long, UserEntity> userEntityMap) {
-        List<Long> shareIds = new ArrayList<>();
+        List<Long> shareIds = new ArrayList<>(); // 2 share tu 1, bai 3 share tu bai 1
         for (PostEntity postEntity : postEntityPage) {
             if (Objects.nonNull(postEntity.getShareId())) {
                 shareIds.add(postEntity.getShareId());
             }
         }
-
         Map<Long, PostOutput> sharePostOutputMap;
         if (!shareIds.isEmpty()) {
             List<PostEntity> sharePostEntities = postRepository.findAllByIdIn(shareIds);
@@ -194,7 +158,7 @@ public class PostService {
 
             Map<Long, UserEntity> shareUserEntiyMap = userRepository.findAllByIdIn(shareUserIds).stream()
                     .collect(Collectors.toMap(UserEntity::getId, Function.identity()));
-            List<UserEntity> shareUserEntities = userRepository.findAllByIdIn(shareIds);
+
             sharePostOutputs.stream().map(
                     postOutput -> {
                         UserEntity user = shareUserEntiyMap.get(postOutput.getUserId());

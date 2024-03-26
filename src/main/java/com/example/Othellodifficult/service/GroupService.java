@@ -5,7 +5,7 @@ import com.example.Othellodifficult.dto.group.*;
 import com.example.Othellodifficult.entity.GroupEntity;
 import com.example.Othellodifficult.entity.GroupTagMapEntity;
 import com.example.Othellodifficult.entity.UserEntity;
-import com.example.Othellodifficult.entity.UserGroupEntity;
+import com.example.Othellodifficult.entity.UserGroupMapEntity;
 import com.example.Othellodifficult.mapper.GroupMapper;
 import com.example.Othellodifficult.repository.*;
 import com.example.Othellodifficult.token.TokenHelper;
@@ -15,7 +15,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.swing.text.html.HTML;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -24,7 +23,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class GroupService {
     private final GroupRepository groupRepository;
-    private final UserGroupRepository userGroupRepository;
+    private final UserGroupMapRepository userGroupMapRepository;
     private final UserRepository userRepository;
     private final CustomRepository customRepository;
     private final GroupTagMapRepository groupTagMapRepository;
@@ -40,6 +39,7 @@ public class GroupService {
         }
         else {
             groupEntities = groupRepository.findAllByIdIn(
+                    // kiem tra ham finAllByIdIn(groupId,pageable) co chuyen thanh findAllByTagIdIn
                     Arrays.asList(customRepository.getTag(tagId).getId()), pageable
             );
         }
@@ -48,24 +48,30 @@ public class GroupService {
 
     @Transactional
     public void create(GroupInput groupInput, String accessToken) {
-        Long managerUserId = TokenHelper.getUserIdFromToken(accessToken);
+        Long managerId = TokenHelper.getUserIdFromToken(accessToken);
         GroupEntity groupEntity = GroupEntity.builder()
                 .name(groupInput.getName())
-                .managerGroupId(managerUserId)
-                .memberCount(groupInput.getUserIds().size())
+                .memberCount(groupInput.getUserIds().size() +1)
                 .build();
         groupRepository.save(groupEntity);
-        userGroupRepository.save(UserGroupEntity.builder()
-                .userId(managerUserId)
-                .groupId(groupEntity.getId())
-                .build());
+        userGroupMapRepository.save(
+                UserGroupMapEntity.builder()
+                        .userId(managerId)
+                        .groupId(groupEntity.getId())
+                        .role(Common.ADMIN)
+                        .build()
+        );
+
         for (Long userId : groupInput.getUserIds()) {
-            userGroupRepository.save(
-                    UserGroupEntity.builder()
-                            .userId(userId)
-                            .groupId(groupEntity.getId())
-                            .build()
-            );
+            if(!managerId.equals(userId)){
+                userGroupMapRepository.save(
+                        UserGroupMapEntity.builder()
+                                .userId(userId)
+                                .role(Common.MEMBER)
+                                .groupId(groupEntity.getId())
+                                .build()
+                );
+            }
         }
         for (Long tagId : groupInput.getTagIds()) {
             groupTagMapRepository.save(
@@ -79,19 +85,19 @@ public class GroupService {
 
     @Transactional(readOnly = true)
     public Page<GroupMemberOutPut> getGroupMembers(Long groupId, String accessToken, Pageable pageable) {
-        if (Boolean.FALSE.equals(userGroupRepository.existsByUserIdAndGroupId(
+        if (Boolean.FALSE.equals(userGroupMapRepository.existsByUserIdAndGroupId(
                 TokenHelper.getUserIdFromToken(accessToken), groupId
         ))) {
             throw new RuntimeException(Common.ACTION_FAIL);
         }
-        Page<UserGroupEntity> userGroupEntities = userGroupRepository.findAllByGroupId(groupId, pageable);
+        Page<UserGroupMapEntity> userGroupEntities = userGroupMapRepository.findAllByGroupId(groupId, pageable);
         if (Objects.isNull(userGroupEntities) || userGroupEntities.isEmpty()) {
             return Page.empty();
         }
-        Long managerId = customRepository.getGroup(groupId).getManagerGroupId();
+        Long managerId = userGroupMapRepository.findByGroupIdAndRole(groupId,Common.ADMIN).getUserId();
 
         Map<Long, UserEntity> userEntityMap = userRepository.findAllByIdIn(
-                userGroupEntities.stream().map(UserGroupEntity::getUserId).collect(Collectors.toList())
+                userGroupEntities.stream().map(UserGroupMapEntity::getUserId).collect(Collectors.toList())
         ).stream().collect(Collectors.toMap(UserEntity::getId, Function.identity()));
 
         return userGroupEntities.map(
@@ -101,7 +107,7 @@ public class GroupService {
                             .id(userEntity.getId())
                             .fullName(userEntity.getFullName())
                             .imageUrl(userEntity.getImageUrl())
-                            .positionInGroup(userEntity.getId().equals(managerId) ? Common.ADMIN : Common.MEMBER)
+                            .role(userEntity.getId().equals(managerId) ? Common.ADMIN : Common.MEMBER)
                             .build();
                 }
         );
@@ -109,19 +115,19 @@ public class GroupService {
 
     @Transactional
     public void addNewMember(GroupAddNewMemberInput groupAddNewMemberInput, String accessToken) {
-        if (Boolean.FALSE.equals(userGroupRepository.existsByUserIdInAndGroupId(
+        if (Boolean.FALSE.equals(userGroupMapRepository.existsByUserIdInAndGroupId(
                 Arrays.asList(TokenHelper.getUserIdFromToken(accessToken)), groupAddNewMemberInput.getGroupId()
         ))) {
             throw new RuntimeException(Common.ACTION_FAIL);
         }
-        if (Boolean.TRUE.equals(userGroupRepository.existsByUserIdInAndGroupId(
+        if (Boolean.TRUE.equals(userGroupMapRepository.existsByUserIdInAndGroupId(
                 groupAddNewMemberInput.getUserIds(), groupAddNewMemberInput.getGroupId()
         ))) {
             throw new RuntimeException(Common.ACTION_FAIL);
         }
         for (Long newUserId : groupAddNewMemberInput.getUserIds()) {
-            userGroupRepository.save(
-                    UserGroupEntity.builder()
+            userGroupMapRepository.save(
+                    UserGroupMapEntity.builder()
                             .userId(newUserId)
                             .groupId(groupAddNewMemberInput.getGroupId())
                             .build()
@@ -132,29 +138,25 @@ public class GroupService {
     @Transactional
     public void deleteMember(String accessToken, GroupDeleteMemberInput groupDeleteMemberInput) {
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
-        Long managerId = customRepository.getGroup(groupDeleteMemberInput.getGroupId()).getManagerGroupId();
+        Long managerId = userGroupMapRepository
+                .findByGroupIdAndRole(groupDeleteMemberInput.getGroupId(),Common.ADMIN).getUserId();
         if (!userId.equals(managerId)) {
             throw new RuntimeException(Common.ACTION_FAIL);
         }
         if (userId.equals(groupDeleteMemberInput.getUserId())) {
             throw new RuntimeException(Common.ACTION_FAIL);
         }
-        userGroupRepository.deleteByUserIdAndGroupId(groupDeleteMemberInput.getUserId(), groupDeleteMemberInput.getGroupId());
+        userGroupMapRepository.deleteByUserIdAndGroupId(groupDeleteMemberInput.getUserId(), groupDeleteMemberInput.getGroupId());
     }
 
     @Transactional
-    public void leaveTheGroup(GroupLeaveTheGroupInput groupLeaveTheGroupInput) {
-        if (userGroupRepository.countByGroupId(groupLeaveTheGroupInput.getGroupId()) > 1) {
-            userGroupRepository.deleteByUserIdAndGroupId(
-                    groupLeaveTheGroupInput.getUserId(),
-                    groupLeaveTheGroupInput.getGroupId()
-            );
+    public void leaveTheGroup(String accessToken, Long groupId) {
+        Long userId = TokenHelper.getUserIdFromToken(accessToken);
+        if (userGroupMapRepository.countByGroupId(groupId) > 1) {
+            userGroupMapRepository.deleteByUserIdAndGroupId(userId,groupId);
         } else {
-            userGroupRepository.deleteByUserIdAndGroupId(
-                    groupLeaveTheGroupInput.getUserId(),
-                    groupLeaveTheGroupInput.getGroupId()
-            );
-            groupRepository.deleteById(groupLeaveTheGroupInput.getGroupId());
+            userGroupMapRepository.deleteByUserIdAndGroupId(userId,groupId);
+            groupRepository.deleteById(groupId);
         }
     }
 }

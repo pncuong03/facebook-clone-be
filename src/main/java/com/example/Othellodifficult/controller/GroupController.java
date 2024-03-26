@@ -18,19 +18,19 @@ import java.util.List;
 public class GroupController {
     private final GroupService groupService;
 
-    @Operation(summary = "Tìm kiếm nhóm")
-    @GetMapping("/search")
-    public Page<GroupOutput> getGroups(@RequestParam(required = false) String search,
-                                       @RequestParam(required = false) Long tagId,
-                                       @ParameterObject Pageable pageable){
-        return groupService.getGroups(search, tagId, pageable);
-    }
-
     @Operation(summary = "Tạo nhóm")
     @PostMapping("/create-group")
     public void create(@RequestBody @Valid GroupInput groupInput,
                        @RequestHeader("Authorization") String accessToken) {
         groupService.create(groupInput, accessToken);
+    }
+
+    @Operation(summary = "Tìm kiếm nhóm")
+    @GetMapping("/search")
+    public Page<GroupOutput> getGroups(@RequestParam(required = false) String search,
+                                       @RequestParam(required = false) Long tagId,
+                                       @ParameterObject Pageable pageable) {
+        return groupService.getGroups(search, tagId, pageable);
     }
 
     @Operation(summary = "Lấy danh sách thành viên trong nhóm")
@@ -57,7 +57,8 @@ public class GroupController {
 
     @Operation(summary = "Rời nhóm")
     @DeleteMapping("/leave-group")
-    public void leaveTheGroupChat(@RequestBody @Valid GroupLeaveTheGroupInput groupLeaveTheGroupInput) {
-        groupService.leaveTheGroup(groupLeaveTheGroupInput);
+    public void leaveTheGroupChat(@RequestHeader("Authorization") String accessToken,
+                                  @RequestParam Long groupId) {
+        groupService.leaveTheGroup(accessToken,groupId);
     }
 }

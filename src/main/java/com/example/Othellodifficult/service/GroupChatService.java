@@ -47,6 +47,9 @@ public class GroupChatService {
         chatEntity.setManagerId(managerId);
         chatEntity.setNewestChatTime(LocalDateTime.now());
         chatEntity.setChatType(Common.GROUP);
+        chatEntity.setNewestUserId(managerId);
+        chatEntity.setNewestMessage("Created Group");
+
 
         chatRepository.save(chatEntity);
 
