@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
@@ -233,6 +234,7 @@ public class FriendsService {
                                 .id(userEntity.getId())
                                 .fullName(userEntity.getFullName())
                                 .imageUrl(userEntity.getImageUrl())
+                                .createdAt(friendRequestEntity.getCreatedAt())
                                 .build();
                     }
                     return friendRequestOutput;

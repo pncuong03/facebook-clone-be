@@ -5,11 +5,14 @@ import com.example.Othellodifficult.dto.post.CreatePostInput;
 import com.example.Othellodifficult.dto.post.PostOutput;
 import com.example.Othellodifficult.service.PostGroupService;
 import com.example.Othellodifficult.service.PostService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,19 +34,27 @@ public class PostGroupController {
     }
 
     @Operation(summary = "Đăng bài viết")
-    @PostMapping("/post")
+    @PostMapping(value = "/post", consumes = {
+            MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE
+    })
     public void creatPost(@RequestHeader("Authorization") String accessToken,
-                          @RequestBody @Valid CreatePostGroupInput createPostGroupInput
-                         /* @RequestParam(name = "images") List<MultipartFile> multipartFiles*/){
-        postGroupService.creatPost(accessToken, createPostGroupInput /*multipartFiles*/);
+                          @RequestPart("post_information") @Valid String createPostInformation,
+                          @RequestPart(name = "images",required = false) List<MultipartFile> multipartFiles) throws JsonProcessingException {
+        CreatePostGroupInput createPostGroupInput ;
+        ObjectMapper objectMapper = new ObjectMapper();
+        createPostGroupInput = objectMapper.readValue(createPostInformation, CreatePostGroupInput.class);
+        postGroupService.creatPost(accessToken, createPostGroupInput,multipartFiles);
     }
 
     @Operation(summary = "Sửa bài viết")
     @PutMapping("/update")
     public void updatePost(@RequestHeader("Authorization") String accessToken,
+                           @RequestPart("post_information") @Valid String updatePostInformation,
                            @RequestParam Long postId,
-                           @RequestBody @Valid CreatePostInput updatePostInput,
-                           @RequestParam(name = "images") List<MultipartFile> multipartFiles){
+                           @RequestPart(name = "images") List<MultipartFile> multipartFiles) throws JsonProcessingException {
+        CreatePostGroupInput updatePostInput;
+        ObjectMapper objectMapper = new ObjectMapper();
+        updatePostInput = objectMapper.readValue(updatePostInformation,CreatePostGroupInput.class);
         postGroupService.updatePost(accessToken, postId, updatePostInput, multipartFiles);
     }
 

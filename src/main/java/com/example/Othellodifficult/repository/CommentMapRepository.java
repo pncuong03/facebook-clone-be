@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface CommentMapRepository extends JpaRepository<CommentMapEntity, Long> {
     List<CommentMapEntity> findAllByPostIdAndAndCommentId(Long postId, Long commentId);
+    void deleteAllByPostId(Long postId);
 }
