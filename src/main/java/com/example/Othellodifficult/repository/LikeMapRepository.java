@@ -15,4 +15,6 @@ public interface LikeMapRepository extends JpaRepository<LikeMapEntity, Long> {
     void deleteAllByUserIdAndPostId(Long userId, Long postId);
     List<LikeMapEntity> findAllByUserIdAndPostIdIn(Long userId, Collection<Long> postIds);
     Page<LikeMapEntity> findAllByPostId(Long postId, Pageable pageable);
+    LikeMapEntity findAllByPostId(Long postId);
+    void deleteAllByPostId(Long postid);
 }

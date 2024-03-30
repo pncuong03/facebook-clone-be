@@ -12,5 +12,6 @@ public interface PostMapper {
     PostEntity getEntityFromInput(CreatePostInput createPostInput);
     PostEntity getEntityFromInput(CreatePostGroupInput createPostGroupInput);
     void updateEntityFromInput(@MappingTarget PostEntity postEntity, CreatePostInput createPostInput);
+    void updateEntityFromInput(@MappingTarget PostEntity postEntity, CreatePostGroupInput createPostGroupInput);
     PostOutput getOutputFromEntity(PostEntity postEntity);
 }

@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
@@ -122,6 +123,7 @@ public class FriendsService {
         if (receiveId.equals(senderId)) {
             throw new RuntimeException(Common.ACTION_FAIL);
         }
+        // Neu da gui yeu cau roi thi k dc gui nua -- notDone
         FriendRequestEntity friendRequestEntity = FriendRequestEntity.builder()
                 .senderId(senderId)
                 .receiverId(receiveId)
@@ -241,6 +243,7 @@ public class FriendsService {
                                 .id(userEntity.getId())
                                 .fullName(userEntity.getFullName())
                                 .imageUrl(userEntity.getImageUrl())
+                                .createdAt(friendRequestEntity.getCreatedAt())
                                 .build();
                     }
                     return friendRequestOutput;

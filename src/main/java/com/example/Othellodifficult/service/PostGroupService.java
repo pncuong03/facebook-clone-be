@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -38,9 +39,10 @@ public class PostGroupService {
     private final CustomRepository customRepository;
     private final NotificationRepository notificationRepository;
     private final UserGroupMapRepository userGroupMapRepository;
+    private final CommentMapRepository commentMapRepository;
 
     @Transactional(readOnly = true)
-    public Page<PostOutput> getPostGroup(String accessToken,Long groupId, Pageable pageable) {
+    public Page<PostOutput> getPostGroup(String accessToken, Long groupId, Pageable pageable) {
         Page<PostEntity> postEntityPage = postRepository.findAllByGroupId(groupId, pageable);
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
         if (Objects.isNull(postEntityPage) || postEntityPage.isEmpty()) {
@@ -55,21 +57,23 @@ public class PostGroupService {
     }
 
     @Transactional
-    public void creatPost(String accessToken, CreatePostGroupInput createPostGroupInput/*List<MultipartFile> multipartFiles*/) {
+    public void creatPost(String accessToken, CreatePostGroupInput createPostGroupInput, List<MultipartFile> multipartFiles) {
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
         PostEntity postEntity = postMapper.getEntityFromInput(createPostGroupInput);
-//        postEntity.setImageUrlsString(StringUtils.convertListToString(getImageUrls(multipartFiles)));
+        if (multipartFiles == null) postEntity.setImageUrlsString(null);
+        postEntity.setImageUrlsString(StringUtils.convertListToString(getImageUrls(multipartFiles)));
         postEntity.setUserId(userId);
         postEntity.setLikeCount(0);
         postEntity.setCommentCount(0);
         postEntity.setShareCount(0);
+        postEntity.setState(Common.PUBLIC);
         postEntity.setCreatedAt(LocalDateTime.now());
         postEntity.setType(Common.GROUP);
-        postEntity.setImageUrlsString("Anh");
         postRepository.save(postEntity);
     }
+
     @Transactional
-    public void updatePost(String accessToken, Long postId, CreatePostInput updatePostInput, List<MultipartFile> multipartFiles) {
+    public void updatePost(String accessToken, Long postId, CreatePostGroupInput updatePostInput, List<MultipartFile> multipartFiles) {
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
         PostEntity postEntity = customRepository.getPost(postId);
         if (!userId.equals(postEntity.getUserId())) {
@@ -88,6 +92,8 @@ public class PostGroupService {
         if (!userId.equals(postEntity.getUserId()) || !userId.equals(adminId)) {
             throw new RuntimeException(Common.ACTION_FAIL);
         }
+        commentMapRepository.deleteAllByPostId(postId);
+        likeMapRepository.deleteAllByPostId(postId);
         postRepository.delete(postEntity);
     }
 
@@ -189,12 +195,12 @@ public class PostGroupService {
         );
     }
 
-    private Page<PostOutput> setHasLikeForPosts(Long userId, Page<PostOutput> postOutputs){
+    private Page<PostOutput> setHasLikeForPosts(Long userId, Page<PostOutput> postOutputs) {
         List<LikeMapEntity> likeMapEntities = likeMapRepository.findAllByUserIdAndPostIdIn(
                 userId,
                 postOutputs.map(PostOutput::getId).toList()
         );
-        if (Objects.isNull(likeMapEntities) || likeMapEntities.isEmpty()){
+        if (Objects.isNull(likeMapEntities) || likeMapEntities.isEmpty()) {
             return postOutputs;
         }
         Map<Long, Long> likeMapsMap = likeMapEntities.stream()
@@ -207,12 +213,12 @@ public class PostGroupService {
         );
     }
 
-    private List<String> getImageUrls(List<MultipartFile> multipartFiles){
-        if (Objects.isNull(multipartFiles) || multipartFiles.isEmpty()){
+    private List<String> getImageUrls(List<MultipartFile> multipartFiles) {
+        if (Objects.isNull(multipartFiles) || multipartFiles.isEmpty()) {
             return new ArrayList<>();
         }
         List<String> imageUrls = new ArrayList<>();
-        for (MultipartFile multipartFile : multipartFiles){
+        for (MultipartFile multipartFile : multipartFiles) {
             imageUrls.add(CloudinaryHelper.uploadAndGetFileUrl(multipartFile));
         }
         return imageUrls;

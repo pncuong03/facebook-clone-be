@@ -2,6 +2,8 @@ package com.example.Othellodifficult.dto.user;
 
 import lombok.*;
 
+import java.time.OffsetDateTime;
+
 @Getter
 @Setter
 @AllArgsConstructor

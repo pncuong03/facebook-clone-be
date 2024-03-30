@@ -136,7 +136,6 @@ create table tbl_group
     user_id      BIGSERIAL,
     name         VARCHAR,
     member_count INTEGER,
-    role         VARCHAR
 )
 create table tbl_group_tag_map
 (

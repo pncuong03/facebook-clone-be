@@ -13,6 +13,6 @@ import javax.validation.constraints.Pattern;
 @NoArgsConstructor
 public class CreatePostGroupInput {
     private String content;
-    private String state = Common.PUBLIC;
+
     private Long groupId;
 }
