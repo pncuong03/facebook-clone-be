@@ -91,7 +91,7 @@ public class UserInteractService {
     }
 
     @Transactional
-    public void comment(Long postId, String comment, Long commentId, String accessToken) {
+    public void comment(Long postId, String comment,  String accessToken) {
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
         PostEntity postEntity = postRepository.findById(postId).get();
 
@@ -112,7 +112,6 @@ public class UserInteractService {
                             .userId(userId)
                             .postId(postId)
                             .comment(comment.trim())
-                            .commentId(commentId)
                             .createdAt(LocalDateTime.now())
                             .build()
             );

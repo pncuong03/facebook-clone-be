@@ -20,7 +20,7 @@ CREATE TABLE tbl_post
     share_count   INTEGER,
     share_id      BIGINT REFERENCES tbl_post (id),
     state         VARCHAR,
-    created_at    TIMESTAMP
+    created_at    TIMESTAMP,
 );
 
 CREATE TABLE tbl_chat
@@ -137,6 +137,7 @@ create table tbl_group
     name         VARCHAR,
     member_count INTEGER,
 )
+alter table tbl_post add column group_id BIGINT REFERENCES tbl_group (id),
 create table tbl_group_tag_map
 (
     id       bigserial primary key,

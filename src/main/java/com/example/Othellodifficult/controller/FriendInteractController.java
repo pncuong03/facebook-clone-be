@@ -32,9 +32,8 @@ public class FriendInteractController {
     @PostMapping("/comment")
     public void comment(@RequestParam Long postId,
                         @RequestParam String comment,
-                        @RequestParam(required = false) Long commentId,
                         @RequestHeader("Authorization") String accessToken){
-        userInteractService.comment(postId, comment, commentId, accessToken);
+        userInteractService.comment(postId, comment, accessToken);
     }
 
     @Operation(summary = "Xóa bình luận bài viết của bạn bè")
