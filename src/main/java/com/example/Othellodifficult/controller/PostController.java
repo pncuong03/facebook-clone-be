@@ -3,6 +3,8 @@ package com.example.Othellodifficult.controller;
 import com.example.Othellodifficult.dto.post.CreatePostInput;
 import com.example.Othellodifficult.dto.post.PostOutput;
 import com.example.Othellodifficult.service.PostService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 import org.springdoc.api.annotations.ParameterObject;
@@ -21,7 +23,7 @@ public class PostController {
     private final PostService postService;
 
     @Operation(summary = "Danh sách bài viết PUBLIC của bạn bè")
-    @PostMapping("/list/friends")
+    @GetMapping("/list/friends")
     public Page<PostOutput> getPostsOfFriends(@RequestHeader("Authorization") String accessToken,
                                               @ParameterObject Pageable pageable){
         return postService.getPostsOfFriends(accessToken, pageable);
@@ -30,8 +32,11 @@ public class PostController {
     @Operation(summary = "Đăng bài viết")
     @PostMapping("/post")
     public void creatPost(@RequestHeader("Authorization") String accessToken,
-                          @RequestBody @Valid CreatePostInput createPostInput,
-                          @RequestParam(name = "images") List<MultipartFile> multipartFiles){
+                          @RequestPart @Valid String createPostInputString,
+                          @RequestPart(name = "images") List<MultipartFile> multipartFiles) throws JsonProcessingException {
+        CreatePostInput createPostInput ;
+        ObjectMapper objectMapper = new ObjectMapper();
+        createPostInput = objectMapper.readValue(createPostInputString, CreatePostInput.class);
         postService.creatPost(accessToken, createPostInput, multipartFiles);
     }
 
@@ -39,8 +44,11 @@ public class PostController {
     @PutMapping("/update")
     public void updatePost(@RequestHeader("Authorization") String accessToken,
                            @RequestParam Long postId,
-                           @RequestBody @Valid CreatePostInput updatePostInput,
-                           @RequestParam(name = "images") List<MultipartFile> multipartFiles){
+                           @RequestPart @Valid String updatePostInputString,
+                           @RequestPart(name = "images") List<MultipartFile> multipartFiles) throws JsonProcessingException {
+        CreatePostInput updatePostInput;
+        ObjectMapper objectMapper = new ObjectMapper();
+        updatePostInput = objectMapper.readValue(updatePostInputString, CreatePostInput.class);
         postService.updatePost(accessToken, postId, updatePostInput, multipartFiles);
     }
 
