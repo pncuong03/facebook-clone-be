@@ -101,6 +101,7 @@ public class PostService {
         postEntity.setShareCount(0);
         postEntity.setCreatedAt(LocalDateTime.now());
          postEntity.setType(Common.USER);
+        postEntity.setGroupId(1L);
         postRepository.save(postEntity);
     }
 
