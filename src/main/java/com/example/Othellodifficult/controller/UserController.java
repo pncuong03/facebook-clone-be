@@ -1,7 +1,9 @@
 package com.example.Othellodifficult.controller;
 
+import com.example.Othellodifficult.base.filter.Filter;
 import com.example.Othellodifficult.common.Common;
 import com.example.Othellodifficult.dto.user.*;
+import com.example.Othellodifficult.entity.UserEntity;
 import com.example.Othellodifficult.service.FriendsService;
 import com.example.Othellodifficult.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -17,7 +19,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.EntityManager;
 import javax.validation.Valid;
+import java.util.List;
 
 // https://blogs.perficient.com/2020/07/27/requestbody-and-multipart-on-spring-boot/
 @RestController
@@ -27,6 +31,24 @@ import javax.validation.Valid;
 public class UserController {
     private final UserService userService;
     private final FriendsService friendsService;
+    private final EntityManager entityManager;
+
+    @GetMapping("/test")
+    public Page<UserEntity> getUsers(@RequestParam(required = false) String username,
+                                     @RequestParam(required = false) String fullName,
+                                     @RequestParam(required = false) List<Long> ids,
+                                     @RequestParam(required = false) String gender,
+                                     @ParameterObject Pageable pageable){
+        return Filter.builder(UserEntity.class, entityManager)
+                .search()
+                .isContain("username", username)
+                .isContain("fullName", fullName)
+
+                .filter()
+                .isIn("id", ids)
+                .isEqual("gender", gender)
+                .getPage(pageable);
+    }
 
     @Operation(summary = "Tìm danh sách người dùng trên app")
     @GetMapping("/list")

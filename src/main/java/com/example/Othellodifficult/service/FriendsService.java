@@ -60,11 +60,19 @@ public class FriendsService {
                     .collect(Collectors.toMap(FriendMapEntity::getId, FriendMapEntity::getId));
         }
 
+        Map<Long, Long> friendRequestMap = new HashMap<>();
+        List<FriendRequestEntity> friendRequestEntities = friendRequestRepository.findAllBySenderId(userId);
+        if (Objects.nonNull(friendRequestEntities) && !friendMapEntities.isEmpty()){
+            friendRequestMap = friendRequestEntities.stream().collect(Collectors.toMap(FriendRequestEntity::getReceiverId, FriendRequestEntity::getSenderId));
+        }
+
         Map<Long, Long> finalFriendMap = friendMap;
+        Map<Long, Long> finalFriendRequestMap = friendRequestMap;
         return userEntities.map(
                 userEntity -> {
                     FriendSearchingOutput friendSearching = userMapper.getFriendSearchingFrom(userEntity);
                     friendSearching.setIsFriend(finalFriendMap.containsKey(friendSearching.getId()));
+                    friendSearching.setHadSendFriendRequest(finalFriendRequestMap.containsKey(friendSearching.getId()));
                     return friendSearching;
                 }
         );
