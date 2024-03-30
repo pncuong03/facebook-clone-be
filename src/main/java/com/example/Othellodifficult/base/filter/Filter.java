@@ -206,6 +206,7 @@ public class Filter<T> {
                 query.append("WHERE ").append(newConditions)
                         .append(Boolean.TRUE.equals(mustCloseParentheses) ? ")" : "");
             }
+            query.append(orderBy);
             System.out.println(query);
             return entityManager.createQuery(new String(query), entityClazz);
         }

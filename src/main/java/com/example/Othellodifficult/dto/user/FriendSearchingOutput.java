@@ -14,4 +14,5 @@ public class FriendSearchingOutput {
     private String imageUrl;
     private String fullName;
     private Boolean isFriend;
+    private Boolean hadSendFriendRequest;
 }

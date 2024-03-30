@@ -148,4 +148,7 @@ create table tbl_user_group_map(
                                    user_id bigserial references tbl_user(id),
                                    group_id bigserial references tbl_group(id),
                                    role varchar
-)
+);
+
+ALTER TABLE tbl_chat ADD COLUMN image_url VARCHAR;
+ALTER TABLE tbl_chat ADD COLUMN newest_user_id BIGINT REFERENCES tbl_user(id);
