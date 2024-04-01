@@ -158,11 +158,13 @@ public class PostService {
             throw new RuntimeException(Common.ACTION_FAIL);
         }
         PostEntity sharePostEntity = postMapper.getEntityFromInput(sharePostInput); // phong
+        sharePostEntity.setUserId(userId);
         sharePostEntity.setImageUrlsString(null);
         sharePostEntity.setShareId(shareId);
         sharePostEntity.setLikeCount(0);
         sharePostEntity.setCommentCount(0);
         sharePostEntity.setShareCount(0);
+        sharePostEntity.setType(Common.USER);
         sharePostEntity.setCreatedAt(LocalDateTime.now());
         postRepository.save(sharePostEntity);
     }

@@ -153,3 +153,5 @@ create table tbl_user_group_map(
 
 ALTER TABLE tbl_chat ADD COLUMN image_url VARCHAR;
 ALTER TABLE tbl_chat ADD COLUMN newest_user_id BIGINT REFERENCES tbl_user(id);
+ALTER TABLE tbl_comment_map ALTER COLUMN comment_id DROP NOT NULL;
+ALTER TABLE tbl_post ALTER COLUMN group_id DROP NOT NULL;

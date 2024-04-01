@@ -38,7 +38,8 @@ public class FriendInteractController {
 
     @Operation(summary = "Xóa bình luận bài viết của bạn bè")
     @DeleteMapping("/comment/delete")
-    public void removeComment(Long commentId, String accessToken){
+    public void removeComment(@RequestParam  Long commentId,
+                              @RequestHeader("Authorization") String accessToken){
         userInteractService.removeComment(commentId, accessToken);
     }
 
