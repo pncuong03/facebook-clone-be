@@ -12,6 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("api/v1/group-chat")
 @AllArgsConstructor
+@CrossOrigin
 public class GroupChatController {
     private final GroupChatService chatService;
 

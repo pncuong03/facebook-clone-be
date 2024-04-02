@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("api/v1/user/post/interaction")
 @AllArgsConstructor
+@CrossOrigin
 public class FriendInteractController {
     private final UserInteractService userInteractService;
 

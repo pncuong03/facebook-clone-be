@@ -11,6 +11,7 @@ import javax.validation.Valid;
 @RestController
 @RequestMapping("api/v1/message")
 @AllArgsConstructor
+@CrossOrigin
 public class MessageController {
     private final MessageService messageService;
 

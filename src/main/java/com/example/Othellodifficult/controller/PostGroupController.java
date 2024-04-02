@@ -22,6 +22,7 @@ import java.util.List;
 @RestController
 @RequestMapping("api/v1/post-group")
 @AllArgsConstructor
+@CrossOrigin
 public class PostGroupController {
     private final PostGroupService postGroupService;
 

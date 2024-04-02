@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("api/v1/friend")
 @AllArgsConstructor
+@CrossOrigin
 public class FriendController {
     private final FriendsService friendsService;
 
