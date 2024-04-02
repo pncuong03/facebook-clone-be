@@ -81,9 +81,7 @@ public class UserInteractService {
     @Transactional
     public void removeLike(Long postId, String accessToken) {
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
-        CompletableFuture.runAsync(() -> {
-            likeMapRepository.deleteAllByUserIdAndPostId(userId, postId);
-        });
+        likeMapRepository.deleteAllByUserIdAndPostId(userId, postId);
         PostEntity postEntity = postRepository.findById(postId).get();
         Integer likeCount = postEntity.getLikeCount();
         postEntity.setLikeCount(--likeCount);
@@ -91,7 +89,7 @@ public class UserInteractService {
     }
 
     @Transactional
-    public void comment(Long postId, String comment,  String accessToken) {
+    public void comment(Long postId, String comment, String accessToken) {
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
         PostEntity postEntity = postRepository.findById(postId).get();
 
