@@ -169,6 +169,20 @@ public class PostService {
         postRepository.save(sharePostEntity);
     }
 
+    @Transactional(readOnly = true)
+    public Page<PostOutput> getPostOfListFriend(String accessToken, Long friendId, Pageable pageable){
+        Long userId = TokenHelper.getUserIdFromToken(accessToken);
+        FriendMapEntity friendMapEntity = friendMapRepository.findByUserId1AndUserId2(userId,friendId);
+        if(Objects.isNull(friendMapEntity)) throw  new RuntimeException(Common.ACTION_FAIL);
+        Page<PostEntity> PostsOfFriendProfile = postRepository.findAllByUserIdAndState(friendId,Common.PUBLIC,pageable);
+       Map<Long, UserEntity> friendMap = new HashMap<>();
+       UserEntity friendEntity = userRepository.findById(friendId).orElseThrow(
+               () -> new RuntimeException(Common.ACTION_FAIL)
+       );
+       friendMap.put(friendEntity.getId(),friendEntity);
+       return setHasLikeForPosts(userId,mapResponsePostPage(PostsOfFriendProfile,friendMap));
+    }
+
     private Page<PostOutput> mapResponsePostPage(Page<PostEntity> postEntityPage, Map<Long, UserEntity> userEntityMap) {
         List<Long> shareIds = new ArrayList<>();
         for (PostEntity postEntity : postEntityPage) {

@@ -17,5 +17,9 @@ public interface FriendMapRepository extends JpaRepository<FriendMapEntity, Long
     @Query(value = "select u from FriendMapEntity u where u.userId1 = :userId or u.userId2 = :userId")
     List<FriendMapEntity> findAllByUserId(Long userId);
 
+    @Query(value = "select u from FriendMapEntity  u where u.userId1 = :userId and u.userId2 = :friendId " +
+            "or  u.userId1 = :friendId and u.userId2 = :userId")
+    FriendMapEntity findByUserId1AndUserId2(Long userId, Long friendId);
+
     void deleteAllByUserId1AndUserId2(Long userId1, Long userId2);
 }

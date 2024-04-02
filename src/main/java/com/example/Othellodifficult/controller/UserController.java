@@ -71,7 +71,7 @@ public class UserController {
     })
     public void changeUserInformation(@RequestPart("new_user_info") @Valid String changeInfoUserRequestString,
                                       @RequestHeader(value = Common.AUTHORIZATION) String accessToken,
-                                      @RequestPart("image") MultipartFile multipartFile) throws JsonProcessingException {
+                                      @RequestPart(value = "image", required = false) MultipartFile multipartFile) throws JsonProcessingException {
         ChangeInfoUserRequest changeInfoUserRequest;
         ObjectMapper objectMapper = new ObjectMapper();
         changeInfoUserRequest = objectMapper.readValue(changeInfoUserRequestString, ChangeInfoUserRequest.class);

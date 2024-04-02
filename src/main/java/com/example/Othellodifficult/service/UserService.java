@@ -6,6 +6,7 @@ import com.example.Othellodifficult.dto.user.ChangeInfoUserRequest;
 import com.example.Othellodifficult.dto.user.UserOutputV2;
 import com.example.Othellodifficult.dto.user.UserRequest;
 import com.example.Othellodifficult.entity.UserEntity;
+import com.example.Othellodifficult.helper.StringUtils;
 import com.example.Othellodifficult.mapper.UserMapper;
 import com.example.Othellodifficult.repository.UserRepository;
 import com.example.Othellodifficult.token.TokenHelper;
@@ -16,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -46,7 +49,11 @@ public class UserService {
         UserEntity userEntity = getUserBy(userId);
         userMapper.updateEntityFromInput(userEntity, changeInfoUserRequest);
         userEntity.setBirthday(OffsetDateTime.parse(changeInfoUserRequest.getBirthdayString()));
-        userEntity.setImageUrl(CloudinaryHelper.uploadAndGetFileUrl(multipartFile));
+        if(Objects.isNull(multipartFile)){
+            userEntity.setImageUrl(Common.DEFAULT_IMAGE_URL);
+        }else{
+            userEntity.setImageUrl(CloudinaryHelper.uploadAndGetFileUrl(multipartFile));
+        }
         userRepository.save(userEntity);
     }
 
@@ -75,5 +82,16 @@ public class UserService {
             return TokenHelper.generateToken(userEntity);
         }
         throw new RuntimeException(Common.INCORRECT_PASSWORD);
+    }
+
+    private List<String> getImageUrls(List<MultipartFile> multipartFiles){
+        if (Objects.isNull(multipartFiles) || multipartFiles.isEmpty()){
+            return new ArrayList<>();
+        }
+        List<String> imageUrls = new ArrayList<>();
+        for (MultipartFile multipartFile : multipartFiles){
+            imageUrls.add(CloudinaryHelper.uploadAndGetFileUrl(multipartFile));
+        }
+        return imageUrls;
     }
 }

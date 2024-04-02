@@ -29,11 +29,27 @@ public class PostController {
         return postService.getPostsOfFriends(accessToken, pageable);
     }
 
+    @Operation(summary = "Lấy post của bạn bè")
+    @GetMapping("/list/post-friend")
+    public Page<PostOutput> getPostOfFriendProfile(@RequestHeader("Authorization") String accessToken,
+                                                   @RequestParam Long friendId,
+                                                   @ParameterObject Pageable pageable){
+           return postService.getPostOfListFriend(accessToken, friendId, pageable);
+    }
+
+    @Operation(summary = "Lấy post của người lạ")
+    @GetMapping("/list/post-user")
+    public Page<PostOutput> getPostOfUserProfile(@RequestHeader("Authorization") String accessToken,
+                                                   @RequestParam Long userId,
+                                                   @ParameterObject Pageable pageable){
+        return postService.getPostsByUserId(userId, accessToken, pageable);
+    }
+
     @Operation(summary = "Đăng bài viết")
     @PostMapping("/post")
     public void creatPost(@RequestHeader("Authorization") String accessToken,
                           @RequestPart @Valid String createPostInputString,
-                          @RequestPart(name = "images") List<MultipartFile> multipartFiles) throws JsonProcessingException {
+                          @RequestPart(name = "images", required = false) List<MultipartFile> multipartFiles) throws JsonProcessingException {
         CreatePostInput createPostInput ;
         ObjectMapper objectMapper = new ObjectMapper();
         createPostInput = objectMapper.readValue(createPostInputString, CreatePostInput.class);
@@ -45,7 +61,7 @@ public class PostController {
     public void updatePost(@RequestHeader("Authorization") String accessToken,
                            @RequestParam Long postId,
                            @RequestPart @Valid String updatePostInputString,
-                           @RequestPart(name = "images") List<MultipartFile> multipartFiles) throws JsonProcessingException {
+                           @RequestPart(name = "images", required = false) List<MultipartFile> multipartFiles) throws JsonProcessingException {
         CreatePostInput updatePostInput;
         ObjectMapper objectMapper = new ObjectMapper();
         updatePostInput = objectMapper.readValue(updatePostInputString, CreatePostInput.class);

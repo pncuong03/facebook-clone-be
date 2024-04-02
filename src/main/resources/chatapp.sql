@@ -6,7 +6,8 @@ CREATE TABLE tbl_user
     full_name VARCHAR,
     image_url VARCHAR,
     birthday  TIMESTAMP,
-    gender    VARCHAR
+    gender    VARCHAR,
+    description VARCHAR
 );
 
 CREATE TABLE tbl_post

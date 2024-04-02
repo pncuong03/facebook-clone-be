@@ -15,4 +15,5 @@ public class ChangeInfoUserRequest {
     private String fullName;
     private String birthdayString;
     private String gender;
+    private String description;
 }
