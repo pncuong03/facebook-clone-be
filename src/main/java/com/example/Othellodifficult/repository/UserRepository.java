@@ -13,6 +13,7 @@ import java.util.List;
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
     UserEntity findByUsername(String username);
+    Page<UserEntity> findAllByIdIn(Collection<Long> userIds, Pageable pageable);
     Boolean existsByUsername(String username);
     List<UserEntity> findAllByIdIn(Collection<Long> userIds);
 }

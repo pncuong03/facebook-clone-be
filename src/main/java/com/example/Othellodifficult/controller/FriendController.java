@@ -17,6 +17,14 @@ import org.springframework.web.bind.annotation.*;
 public class FriendController {
     private final FriendsService friendsService;
 
+    @Operation(summary = "lấy  list bạn bè theo tên")
+    @GetMapping("/list-search")
+    public Page<UserOutput> getFriendsBySearch(@RequestHeader("Authorization") String accessToken,
+                                               @RequestParam(name = "search", required = false) String search,
+                                               @ParameterObject Pageable pageable){
+        return friendsService.getFriendBySearch(accessToken, search, pageable);
+    }
+
     @Operation(summary = "Danh sách bạn bè")
     @GetMapping("/list")
     public Page<UserOutput> getFriends(@RequestHeader("Authorization") String accessToken,

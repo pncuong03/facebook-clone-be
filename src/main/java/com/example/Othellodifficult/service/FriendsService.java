@@ -2,6 +2,7 @@ package com.example.Othellodifficult.service;
 
 import com.example.Othellodifficult.base.filter.Filter;
 import com.example.Othellodifficult.common.Common;
+import com.example.Othellodifficult.dto.friends.FriendPerPageOutput;
 import com.example.Othellodifficult.dto.friends.FriendRequestOutput;
 import com.example.Othellodifficult.dto.user.FriendSearchingOutput;
 import com.example.Othellodifficult.dto.user.UserOutput;
@@ -40,6 +41,49 @@ public class FriendsService {
     private final NotificationRepository notificationRepository;
     private final CustomRepository customRepository;
 
+    @Transactional
+    public Page<UserOutput> getFriendBySearch(String accessToken, String search, Pageable pageable) {
+        Long userId = TokenHelper.getUserIdFromToken(accessToken);
+        Page<FriendMapEntity> friendMapEntities = friendMapRepository.findAllByUserId(userId, pageable);
+        List<Long> friendIds = new ArrayList<>();
+        if (Objects.isNull(friendMapEntities) || friendMapEntities.isEmpty()) {
+            return Page.empty();
+        }
+
+        for (FriendMapEntity friendMapEntity : friendMapEntities) {
+            friendIds.add(friendMapEntity.getUserId1());
+            friendIds.add(friendMapEntity.getUserId2());
+        }
+        friendIds = friendIds.stream()
+                .filter(friendId -> !friendId.equals(userId))
+                .distinct()
+                .collect(Collectors.toList());
+        if(Objects.isNull(search)){
+            return userRepository.findAllByIdIn(friendIds, pageable).map(
+                    userEntity ->{
+                        return UserOutput.builder()
+                                .id(userEntity.getId())
+                                .imageUrl(userEntity.getImageUrl())
+                                .fullName(userEntity.getFullName())
+                                .build();
+                    });
+        }
+        Page<UserEntity> userEntities = Filter.builder(UserEntity.class, entityManager)
+                .search()
+                .isContain("fullName", search)
+                .filter()
+                .isIn("id", friendIds)
+                .getPage(pageable);
+        return userEntities.map(
+                userEntity ->{
+                    return UserOutput.builder()
+                            .id(userEntity.getId())
+                            .imageUrl(userEntity.getImageUrl())
+                            .fullName(userEntity.getFullName())
+                            .build();
+                });
+    }
+
     @Transactional(readOnly = true)
     public Page<FriendSearchingOutput> findUsers(String search, String accessToken, Pageable pageable) {
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
@@ -63,7 +107,7 @@ public class FriendsService {
 
         Map<Long, Long> friendRequestMap = new HashMap<>();
         List<FriendRequestEntity> friendRequestEntities = friendRequestRepository.findAllBySenderId(userId);
-        if (Objects.nonNull(friendRequestEntities) && !friendMapEntities.isEmpty()){
+        if (Objects.nonNull(friendRequestEntities) && !friendMapEntities.isEmpty()) {
             friendRequestMap = friendRequestEntities.stream().collect(Collectors.toMap(FriendRequestEntity::getReceiverId, FriendRequestEntity::getSenderId));
         }
 
