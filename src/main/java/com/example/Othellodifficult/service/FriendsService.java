@@ -42,17 +42,29 @@ public class FriendsService {
     private final NotificationRepository notificationRepository;
     private final CustomRepository customRepository;
 
-//    @Transactional(readOnly = true)
-//    public FriendInforOutput getFriendInformation(String accessToken, Long checkId){
-//        Long userId = TokenHelper.getUserIdFromToken(accessToken);
-//        UserEntity userEntity = userRepository.findById(checkId).orElseThrow(
-//                () -> new RuntimeException(Common.ACTION_FAIL)
-//        );
-//        if(Objects.nonNull(friendMapRepository.findByUserId1AndUserId2(userId,checkId))){
-//            FriendInforOutput friendInforOutput = userMapper.getFriendInforFromEntity(userEntity);
-//            friendInforOutput.setState(Common.REQUESTING);
-//        }
-//    }
+    @Transactional(readOnly = true)
+    public FriendInforOutput getFriendInformation(String accessToken, Long checkId){
+        Long userId = TokenHelper.getUserIdFromToken(accessToken);
+        UserEntity userEntity = userRepository.findById(checkId).orElseThrow(
+                () -> new RuntimeException(Common.ACTION_FAIL)
+        );
+        FriendInforOutput friendInforOutput = userMapper.getFriendInforFromEntity(userEntity);
+        if(Objects.nonNull(friendMapRepository.findByUserId1AndUserId2(userId,checkId))){
+            ChatEntity chatEntity = chatRepository.findByUserId(userId,checkId);
+            friendInforOutput.setState(Common.FRIEND);
+            friendInforOutput.setChatId(chatEntity.getId());
+        }else{
+            if(Boolean.TRUE.equals(friendRequestRepository.existsBySenderIdAndReceiverId(userId,checkId))
+            || Boolean.TRUE.equals(friendRequestRepository.existsBySenderIdAndReceiverId(checkId,userId)) ){
+                friendInforOutput.setState(Common.REQUESTING);
+                friendInforOutput.setChatId(null);
+            }else{
+                friendInforOutput.setState(Common.STRANGER);
+                friendInforOutput.setChatId(null);
+            }
+        }
+        return friendInforOutput;
+    }
 
     @Transactional(readOnly = true)
     public Page<UserOutput> getFriendBySearch(String accessToken, String search, Pageable pageable) {
@@ -247,21 +259,23 @@ public class FriendsService {
 
         chatRepository.save(
                 ChatEntity.builder()
-                        .name(receiver.getFullName())
+                        .name(receiver.getFullName()+sender.getFullName())
                         .imageUrl(receiver.getImageUrl())
                         .chatType(Common.USER)
                         .userId1(receiverId)
                         .userId2(senderId)
+                        .newestUserId(1L)
                         .build()
         );
 
 
         chatRepository.save(
                 ChatEntity.builder()
-                        .name(sender.getFullName())
+                        .name(sender.getFullName()+receiver.getFullName())
                         .imageUrl(sender.getImageUrl())
                         .chatType(Common.USER)
                         .userId2(receiverId)
+                        .newestUserId(1L)
                         .userId1(senderId)
                         .build()
         );

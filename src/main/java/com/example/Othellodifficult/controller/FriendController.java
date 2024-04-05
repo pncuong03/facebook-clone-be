@@ -1,5 +1,6 @@
 package com.example.Othellodifficult.controller;
 
+import com.example.Othellodifficult.dto.friends.FriendInforOutput;
 import com.example.Othellodifficult.dto.friends.FriendRequestOutput;
 import com.example.Othellodifficult.dto.user.UserOutput;
 import com.example.Othellodifficult.service.FriendsService;
@@ -16,6 +17,13 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin
 public class FriendController {
     private final FriendsService friendsService;
+
+    @Operation(summary = "lấy thông tin cá nhân")
+    @GetMapping("/friend-information")
+    public FriendInforOutput getFriendInformation(@RequestHeader("Authorization") String accessToken,
+                                                        @RequestParam Long checkId){
+        return friendsService.getFriendInformation(accessToken,checkId);
+    }
 
     @Operation(summary = "lấy  list bạn bè theo tên")
     @GetMapping("/list-search")
