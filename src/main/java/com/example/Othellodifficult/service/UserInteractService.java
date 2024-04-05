@@ -124,7 +124,8 @@ public class UserInteractService {
         });
 
         Integer commentCount = postEntity.getCommentCount();
-        postEntity.setLikeCount(++commentCount);
+        commentCount++;
+        postEntity.setCommentCount(commentCount);
         postRepository.save(postEntity);
     }
 

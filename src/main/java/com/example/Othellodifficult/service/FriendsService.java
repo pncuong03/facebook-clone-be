@@ -2,6 +2,7 @@ package com.example.Othellodifficult.service;
 
 import com.example.Othellodifficult.base.filter.Filter;
 import com.example.Othellodifficult.common.Common;
+import com.example.Othellodifficult.dto.friends.FriendInforOutput;
 import com.example.Othellodifficult.dto.friends.FriendPerPageOutput;
 import com.example.Othellodifficult.dto.friends.FriendRequestOutput;
 import com.example.Othellodifficult.dto.user.FriendSearchingOutput;
@@ -41,7 +42,19 @@ public class FriendsService {
     private final NotificationRepository notificationRepository;
     private final CustomRepository customRepository;
 
-    @Transactional
+//    @Transactional(readOnly = true)
+//    public FriendInforOutput getFriendInformation(String accessToken, Long checkId){
+//        Long userId = TokenHelper.getUserIdFromToken(accessToken);
+//        UserEntity userEntity = userRepository.findById(checkId).orElseThrow(
+//                () -> new RuntimeException(Common.ACTION_FAIL)
+//        );
+//        if(Objects.nonNull(friendMapRepository.findByUserId1AndUserId2(userId,checkId))){
+//            FriendInforOutput friendInforOutput = userMapper.getFriendInforFromEntity(userEntity);
+//            friendInforOutput.setState(Common.REQUESTING);
+//        }
+//    }
+
+    @Transactional(readOnly = true)
     public Page<UserOutput> getFriendBySearch(String accessToken, String search, Pageable pageable) {
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
         Page<FriendMapEntity> friendMapEntities = friendMapRepository.findAllByUserId(userId, pageable);

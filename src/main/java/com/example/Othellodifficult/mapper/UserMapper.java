@@ -1,5 +1,6 @@
 package com.example.Othellodifficult.mapper;
 
+import com.example.Othellodifficult.dto.friends.FriendInforOutput;
 import com.example.Othellodifficult.dto.user.ChangeInfoUserRequest;
 import com.example.Othellodifficult.dto.user.FriendSearchingOutput;
 import com.example.Othellodifficult.dto.user.UserOutputV2;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 public interface UserMapper {
     FriendSearchingOutput getFriendSearchingFrom(UserEntity userEntity);
     UserOutputV2 getOutputFromEntity(UserEntity userEntity);
+    FriendInforOutput getFriendInforFromEntity( UserEntity userEntity);
     UserEntity getEntityFromRequest(UserRequest signUpRequest);
     void updateEntityFromInput(@MappingTarget UserEntity userEntity, ChangeInfoUserRequest changeInfoUserRequest);
 }

@@ -1,6 +1,9 @@
 package com.example.Othellodifficult.common;
 
 public final class Common {
+    public static final String FRIEND = "FRIEND";
+    public static final String STRANGER = "STRANGER";
+    public static final String REQUESTING = "REQUESTING";
     public static final String USER = "USER";
     public static final String GROUP = "GROUP";
     public static final String ACTION_FAIL = "ACTION FAIL";
