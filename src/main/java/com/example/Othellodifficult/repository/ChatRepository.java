@@ -11,4 +11,6 @@ public interface ChatRepository extends JpaRepository<ChatEntity, Long> {
 
     @Query("select u from ChatEntity u where u.userId1 =:userId1 and u.userId2 = :userId2")
     ChatEntity findByUserId(Long userId1, Long userId2);
+
+    void deleteAllByUserId1AndUserId2(Long userId1, Long userId2);
 }

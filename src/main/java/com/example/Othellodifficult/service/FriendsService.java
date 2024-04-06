@@ -259,7 +259,7 @@ public class FriendsService {
 
         chatRepository.save(
                 ChatEntity.builder()
-                        .name(receiver.getFullName()+sender.getFullName())
+                        .name(receiver.getFullName())
                         .imageUrl(receiver.getImageUrl())
                         .chatType(Common.USER)
                         .userId1(receiverId)
@@ -271,7 +271,7 @@ public class FriendsService {
 
         chatRepository.save(
                 ChatEntity.builder()
-                        .name(sender.getFullName()+receiver.getFullName())
+                        .name(sender.getFullName())
                         .imageUrl(sender.getImageUrl())
                         .chatType(Common.USER)
                         .userId2(receiverId)
@@ -327,5 +327,7 @@ public class FriendsService {
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
         friendMapRepository.deleteAllByUserId1AndUserId2(userId, friendId);
         friendMapRepository.deleteAllByUserId1AndUserId2(friendId, userId);
+        chatRepository.deleteAllByUserId1AndUserId2(userId, friendId);
+        chatRepository.deleteAllByUserId1AndUserId2(friendId, userId);
     }
 }
