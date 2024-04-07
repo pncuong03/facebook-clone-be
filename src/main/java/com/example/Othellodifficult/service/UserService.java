@@ -44,15 +44,20 @@ public class UserService {
     @Transactional
     public void changeUserInformation(ChangeInfoUserRequest changeInfoUserRequest,
                                       String accessToken,
-                                      MultipartFile multipartFile){
+                                      MultipartFile avatar, MultipartFile background){
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
         UserEntity userEntity = getUserBy(userId);
         userMapper.updateEntityFromInput(userEntity, changeInfoUserRequest);
         userEntity.setBirthday(OffsetDateTime.parse(changeInfoUserRequest.getBirthdayString()));
-        if(Objects.isNull(multipartFile)){
+        if(Objects.isNull(background)){
+            userEntity.setBackgroundUrl(Common.DEFAULT_BACKGROUND);
+        }else{
+            userEntity.setBackgroundUrl(CloudinaryHelper.uploadAndGetFileUrl(background));
+        }
+        if(Objects.isNull(avatar)){
             userEntity.setImageUrl(Common.DEFAULT_IMAGE_URL);
         }else{
-            userEntity.setImageUrl(CloudinaryHelper.uploadAndGetFileUrl(multipartFile));
+            userEntity.setImageUrl(CloudinaryHelper.uploadAndGetFileUrl(avatar));
         }
         userRepository.save(userEntity);
     }
@@ -65,6 +70,7 @@ public class UserService {
         signUpRequest.setPassword(BCrypt.hashpw(signUpRequest.getPassword(), BCrypt.gensalt()));
         UserEntity userEntity = userMapper.getEntityFromRequest(signUpRequest);
         userEntity.setImageUrl(Common.DEFAULT_IMAGE_URL);
+        userEntity.setBackgroundUrl(Common.DEFAULT_BACKGROUND);
         UUID uuid = UUID.randomUUID();
         userEntity.setFullName(Common.USER + "_" + uuid);
         userRepository.save(userEntity);

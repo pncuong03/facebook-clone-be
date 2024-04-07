@@ -71,11 +71,12 @@ public class UserController {
     })
     public void changeUserInformation(@RequestPart("new_user_info") @Valid String changeInfoUserRequestString,
                                       @RequestHeader(value = Common.AUTHORIZATION) String accessToken,
-                                      @RequestPart(value = "image", required = false) MultipartFile multipartFile) throws JsonProcessingException {
+                                      @RequestPart(value = "image", required = false) MultipartFile avatar,
+                                      @RequestPart(value = "image_background", required = false) MultipartFile background) throws JsonProcessingException {
         ChangeInfoUserRequest changeInfoUserRequest;
         ObjectMapper objectMapper = new ObjectMapper();
         changeInfoUserRequest = objectMapper.readValue(changeInfoUserRequestString, ChangeInfoUserRequest.class);
-        userService.changeUserInformation(changeInfoUserRequest, accessToken, multipartFile);
+        userService.changeUserInformation(changeInfoUserRequest, accessToken, avatar, background);
     }
 
     @Operation(summary = "Đăng ký tài khoản")

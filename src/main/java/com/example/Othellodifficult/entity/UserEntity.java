@@ -20,6 +20,7 @@ public class UserEntity {
     private String password;
     private String fullName;
     private String imageUrl;
+    private String backgroundUrl;
     private OffsetDateTime birthday;
     private String gender;
     private String description;

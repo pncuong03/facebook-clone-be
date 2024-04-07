@@ -4,6 +4,8 @@ public final class Common {
     public static final String FRIEND = "FRIEND";
     public static final String STRANGER = "STRANGER";
     public static final String REQUESTING = "REQUESTING";
+
+    public static final String DEFAULT_BACKGROUND = "http://res.cloudinary.com/ds9ipqi3z/image/upload/v1712455637/njancjwgyzlcim070udt.jpg";
     public static final String USER = "USER";
     public static final String GROUP = "GROUP";
     public static final String ACTION_FAIL = "ACTION FAIL";

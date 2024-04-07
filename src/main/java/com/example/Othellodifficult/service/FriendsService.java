@@ -219,6 +219,14 @@ public class FriendsService {
             );
         });
     }
+    @Transactional
+    public void deleteSendFriendRequest(String accessToken, Long receiverId){
+        Long userId = TokenHelper.getUserIdFromToken(accessToken);
+        if(Boolean.FALSE.equals(friendRequestRepository.existsBySenderIdAndReceiverId(userId,receiverId))){
+            throw  new RuntimeException(Common.RECORD_NOT_FOUND);
+        }
+        friendRequestRepository.deleteByReceiverIdAndSenderId(receiverId, userId);
+    }
 
     @Transactional
     public void acceptAddFriendRequest(Long senderId, String token) {

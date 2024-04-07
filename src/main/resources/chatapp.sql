@@ -5,6 +5,7 @@ CREATE TABLE tbl_user
     password  VARCHAR,
     full_name VARCHAR,
     image_url VARCHAR,
+    background_url VARCHAR,
     birthday  TIMESTAMP,
     gender    VARCHAR,
     description VARCHAR

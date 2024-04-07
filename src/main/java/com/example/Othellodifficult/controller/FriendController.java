@@ -52,6 +52,13 @@ public class FriendController {
         friendsService.acceptAddFriendRequest(id, accessToken);
     }
 
+    @Operation(summary = "Hủy lời mời kết bạn bên phía người gửi")
+    @DeleteMapping("/delete-request/user")
+    public void deleteAddFriendRequest( @RequestHeader("Authorization") String accessToken, @RequestParam Long receiverId) {
+        friendsService.deleteSendFriendRequest(accessToken, receiverId);
+    }
+
+
     @Operation(summary = "Lấy danh sách lời mời kết bạn")
     @GetMapping("/request/list")
     public Page<FriendRequestOutput> getFriendRequests(@RequestHeader("Authorization") String accessToken,
