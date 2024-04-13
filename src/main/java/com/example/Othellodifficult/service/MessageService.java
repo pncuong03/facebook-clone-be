@@ -4,6 +4,7 @@ import com.example.Othellodifficult.common.Common;
 import com.example.Othellodifficult.dto.message.MessageInput;
 import com.example.Othellodifficult.entity.ChatEntity;
 import com.example.Othellodifficult.entity.UserChatMapEntity;
+import com.example.Othellodifficult.entity.UserEntity;
 import com.example.Othellodifficult.entity.message.EventNotificationEntity;
 import com.example.Othellodifficult.entity.message.MessageEntity;
 import com.example.Othellodifficult.mapper.MessageMapper;
@@ -33,6 +34,7 @@ public class MessageService {
     public String sendMessage(MessageInput messageInput, String accessToken) {
         LocalDateTime now = LocalDateTime.now();
         Long senderId = TokenHelper.getUserIdFromToken(accessToken);
+        UserEntity sender = customRepository.getUser(senderId);
         ChatEntity chatEntity = customRepository.getChat(messageInput.getChatId());
         chatEntity.setNewestUserId(senderId);
         chatEntity.setNewestMessage(messageInput.getMessage());
@@ -65,6 +67,8 @@ public class MessageService {
                         EventNotificationEntity.builder()
                                 .eventType(Common.MESSAGE)
                                 .userId(chatEntity.getUserId2())
+                                .imageUrl(sender.getImageUrl())
+                                .fullName(sender.getFullName())
                                 .state(Common.NEW_EVENT)
                                 .chatId(chatId2)
                                 .createdAt(now)
@@ -82,6 +86,8 @@ public class MessageService {
                                 EventNotificationEntity.builder()
                                         .eventType(Common.MESSAGE)
                                         .userId(userChatEntity.getUserId())
+                                        .imageUrl(sender.getImageUrl())
+                                        .fullName(sender.getFullName())
                                         .state(Common.NEW_EVENT)
                                         .chatId(chatEntity.getId())
                                         .createdAt(now)

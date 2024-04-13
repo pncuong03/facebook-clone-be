@@ -15,6 +15,6 @@ public class MessageOutput {
     private String message;
     private String fullName;
     private String imageUrl;
-    private LocalDateTime createdAt;
     private Boolean isMe;
+    private LocalDateTime createdAt;
 }

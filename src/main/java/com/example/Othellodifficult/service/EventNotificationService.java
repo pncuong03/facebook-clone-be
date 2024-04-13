@@ -70,7 +70,9 @@ public class EventNotificationService {
                     for (EventNotificationEntity event : events) {
                         if (Common.MESSAGE.equals(event.getEventType()) && Common.NEW_EVENT.equals(event.getState())) {
                             messagesForCount.add(event.getChatId());
-                            messageEventOutputs.add(notificationMapper.getOutputFromEntity(event));
+                            MessageEventOutput messageEventOutput = notificationMapper.getOutputFromEntity(event);
+                            messageEventOutput.setIsMe(false);
+                            messageEventOutputs.add(messageEventOutput);
                         } else if (Common.NOTIFICATION.equals(event.getEventType())) {
                             eventCountOutput.setInformCount(eventCountOutput.getInformCount() + 1);
                         }
