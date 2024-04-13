@@ -11,7 +11,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/chat_app
     username: postgres
-    password: 09122002
+    password: 101119
     driver-class-name: org.postgresql.Driver
 
 #  CREATE TABLE tbl_user(
