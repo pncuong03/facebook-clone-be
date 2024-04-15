@@ -13,6 +13,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class MessageEventOutput {
     private Long chatId;
+    private Long userId;
+    private String fullName;
+    private String imageUrl;
     private String message;
+    private Boolean isMe;
     private LocalDateTime createdAt;
 }

@@ -17,8 +17,10 @@ public class EventNotificationEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long userId;
-    private String eventType; // MESSAGE; NOTIFICATION
-    private String state; // NEW_EVENT; OLD_EVENT
+    private String fullName;
+    private String imageUrl;
+    private String eventType;
+    private String state;
     private Long chatId;
     private String message;
     private LocalDateTime createdAt;
