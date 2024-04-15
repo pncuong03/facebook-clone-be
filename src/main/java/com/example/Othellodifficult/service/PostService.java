@@ -149,7 +149,7 @@ public class PostService {
         CompletableFuture.runAsync(() -> {
             PostEntity finalShareEntity = customRepository.getPost(finalShareId);
             Integer shareCount = finalShareEntity.getShareCount();
-            finalShareEntity.setLikeCount(++shareCount);
+            finalShareEntity.setShareCount(++shareCount);
             postRepository.save(finalShareEntity);
             EventHelper.pushEventForUserByUserId(finalShareEntity.getUserId());
         });
