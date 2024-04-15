@@ -62,6 +62,12 @@ public class GroupController {
         groupService.deleteMember(accessToken, groupDeleteMemberInput);
     }
 
+    @Operation(summary = "Lấy thông tin nhóm")
+    @GetMapping("/group/infor")
+    public GroupOutputAndTag getInforGroup(@RequestParam Long groupId) {
+        return groupService.getInforGroup(groupId);
+    }
+
     @Operation(summary = "Rời nhóm")
     @DeleteMapping("/leave-group")
     public void leaveTheGroupChat(@RequestHeader("Authorization") String accessToken,

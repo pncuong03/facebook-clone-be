@@ -27,7 +27,24 @@ public class GroupService {
     private final GroupTagMapRepository groupTagMapRepository;
     private final GroupMapper groupMapper;
     private final TagRepository tagRepository;
-
+    @Transactional
+    public GroupOutputAndTag getInforGroup(Long groupId){
+        GroupEntity groupEntity = groupRepository.findById(groupId).orElseThrow(
+                () -> new RuntimeException(Common.ACTION_FAIL)
+        );
+        List<Long> tagIds = groupTagMapRepository.findAllByGroupId(groupId).stream().map(
+                GroupTagMapEntity::getTagId
+        ).collect(Collectors.toList());
+        List<String> tagName = tagRepository.findAllByIdIn(tagIds).stream().map(
+                TagEntity::getName
+        ).collect(Collectors.toList());
+        GroupOutputAndTag groupOutputAndTag = new GroupOutputAndTag();
+        groupOutputAndTag.setIdGroup(groupEntity.getId());
+        groupOutputAndTag.setName(groupEntity.getName());
+        groupOutputAndTag.setMemberCount(groupEntity.getMemberCount());
+        groupOutputAndTag.setTagList(tagName);
+        return groupOutputAndTag;
+    }
 
     @Transactional(readOnly = true)
     public Page<GroupOutput> getGroups(String search, Long tagId, Pageable pageable){
