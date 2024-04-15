@@ -35,7 +35,7 @@ public class GroupController {
     }
 
     @Operation(summary = "Lấy danh sách nhóm")
-    @GetMapping("/getlist")
+    @GetMapping("/getlistGroup")
     public Page<GroupOutputAndTag> getAllGroups(@ParameterObject Pageable pageable) {
         return groupService.getListGroup( pageable);
     }

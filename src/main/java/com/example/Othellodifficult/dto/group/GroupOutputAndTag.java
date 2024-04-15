@@ -14,6 +14,5 @@ public class GroupOutputAndTag {
     private Long idGroup;
     private String name;
     private Integer memberCount;
-
     private List<String> tagList;
 }

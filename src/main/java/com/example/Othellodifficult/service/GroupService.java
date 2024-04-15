@@ -31,8 +31,7 @@ public class GroupService {
     @Transactional
     public Page<GroupOutputAndTag> getListGroup(Pageable pageable){
         Page<GroupEntity> groupEntities = groupRepository.findAll(pageable);
-        List<GroupOutputAndTag> groupOutputAndTags = new ArrayList<>();
-
+        List<GroupOutputAndTag> groupOutputAndTages = new ArrayList<>();
         for(GroupEntity groupEntity:groupEntities){
             List<Long> tagIds = groupTagMapRepository.findAllByGroupId(groupEntity.getId()).stream()
                     .map(GroupTagMapEntity::getTagId).collect(Collectors.toList());
@@ -42,9 +41,9 @@ public class GroupService {
             groupOutputAndTag.setName(groupEntity.getName());
             groupOutputAndTag.setMemberCount(groupEntity.getMemberCount());
             groupOutputAndTag.setTagList(tagName);
-           groupOutputAndTags.add(groupOutputAndTag);
+           groupOutputAndTages.add(groupOutputAndTag);
        }
-        return new PageImpl<>(groupOutputAndTags, pageable, groupEntities.getTotalElements());
+        return new PageImpl<>(groupOutputAndTages, pageable, groupEntities.getTotalElements());
     }
 
     @Transactional(readOnly = true)
