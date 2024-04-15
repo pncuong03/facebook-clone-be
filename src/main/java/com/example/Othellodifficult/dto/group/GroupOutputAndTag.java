@@ -15,4 +15,5 @@ public class GroupOutputAndTag {
     private String name;
     private Integer memberCount;
     private List<String> tagList;
+
 }

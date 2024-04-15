@@ -28,23 +28,6 @@ public class GroupService {
     private final GroupMapper groupMapper;
     private final TagRepository tagRepository;
 
-    @Transactional
-    public Page<GroupOutputAndTag> getListGroup(Pageable pageable){
-        Page<GroupEntity> groupEntities = groupRepository.findAll(pageable);
-        List<GroupOutputAndTag> groupOutputAndTages = new ArrayList<>();
-        for(GroupEntity groupEntity:groupEntities){
-            List<Long> tagIds = groupTagMapRepository.findAllByGroupId(groupEntity.getId()).stream()
-                    .map(GroupTagMapEntity::getTagId).collect(Collectors.toList());
-            List<String> tagName = tagRepository.findAllByIdIn(tagIds).stream().map(TagEntity::getName).collect(Collectors.toList());
-            GroupOutputAndTag groupOutputAndTag = new GroupOutputAndTag();
-            groupOutputAndTag.setIdGroup(groupEntity.getId());
-            groupOutputAndTag.setName(groupEntity.getName());
-            groupOutputAndTag.setMemberCount(groupEntity.getMemberCount());
-            groupOutputAndTag.setTagList(tagName);
-           groupOutputAndTages.add(groupOutputAndTag);
-       }
-        return new PageImpl<>(groupOutputAndTages, pageable, groupEntities.getTotalElements());
-    }
 
     @Transactional(readOnly = true)
     public Page<GroupOutput> getGroups(String search, Long tagId, Pageable pageable){
@@ -98,6 +81,23 @@ public class GroupService {
                             .build()
             );
         }
+    }
+    @Transactional
+    public Page<GroupOutputAndTag> getListGroup(Pageable pageable){
+        Page<GroupEntity> groupEntities = groupRepository.findAll(pageable);
+        List<GroupOutputAndTag> groupOutputAndTages = new ArrayList<>();
+        for(GroupEntity groupEntity:groupEntities){
+            List<Long> tagIds = groupTagMapRepository.findAllByGroupId(groupEntity.getId()).stream()
+                    .map(GroupTagMapEntity::getTagId).collect(Collectors.toList());
+            List<String> tagName = tagRepository.findAllByIdIn(tagIds).stream().map(TagEntity::getName).collect(Collectors.toList());
+            GroupOutputAndTag groupOutputAndTag = new GroupOutputAndTag();
+            groupOutputAndTag.setIdGroup(groupEntity.getId());
+            groupOutputAndTag.setName(groupEntity.getName());
+            groupOutputAndTag.setMemberCount(groupEntity.getMemberCount());
+            groupOutputAndTag.setTagList(tagName);
+            groupOutputAndTages.add(groupOutputAndTag);
+        }
+        return new PageImpl<>(groupOutputAndTages, pageable, groupEntities.getTotalElements());
     }
 
     @Transactional(readOnly = true)

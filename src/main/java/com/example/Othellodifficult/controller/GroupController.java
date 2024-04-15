@@ -34,18 +34,18 @@ public class GroupController {
         return groupService.getGroups(search, tagId, pageable);
     }
 
-    @Operation(summary = "Lấy danh sách nhóm")
-    @GetMapping("/getlistGroup")
-    public Page<GroupOutputAndTag> getAllGroups(@ParameterObject Pageable pageable) {
-        return groupService.getListGroup( pageable);
-    }
-
     @Operation(summary = "Lấy danh sách thành viên trong nhóm")
     @GetMapping("/members") //
     public Page<GroupMemberOutPut> getGroupMemBer(@RequestParam Long groupId,
                                                   @RequestHeader("Authorization") String accessToken,
                                                   @ParameterObject Pageable pageable) {
         return groupService.getGroupMembers(groupId, accessToken, pageable);
+    }
+
+    @Operation(summary = "Lấy danh sách nhóm")
+    @GetMapping("/getlistGroup")
+    public Page<GroupOutputAndTag> getAllGroups(@ParameterObject Pageable pageable) {
+        return groupService.getListGroup( pageable);
     }
 
     @Operation(summary = "Thêm thành viên vào nhóm")
