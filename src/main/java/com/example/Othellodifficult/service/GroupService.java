@@ -2,15 +2,13 @@ package com.example.Othellodifficult.service;
 
 import com.example.Othellodifficult.common.Common;
 import com.example.Othellodifficult.dto.group.*;
-import com.example.Othellodifficult.entity.GroupEntity;
-import com.example.Othellodifficult.entity.GroupTagMapEntity;
-import com.example.Othellodifficult.entity.UserEntity;
-import com.example.Othellodifficult.entity.UserGroupMapEntity;
+import com.example.Othellodifficult.entity.*;
 import com.example.Othellodifficult.mapper.GroupMapper;
 import com.example.Othellodifficult.repository.*;
 import com.example.Othellodifficult.token.TokenHelper;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +26,26 @@ public class GroupService {
     private final CustomRepository customRepository;
     private final GroupTagMapRepository groupTagMapRepository;
     private final GroupMapper groupMapper;
+    private final TagRepository tagRepository;
+
+    @Transactional
+    public Page<GroupOutputAndTag> getListGroup(Pageable pageable){
+        Page<GroupEntity> groupEntities = groupRepository.findAll(pageable);
+        List<GroupOutputAndTag> groupOutputAndTags = new ArrayList<>();
+
+        for(GroupEntity groupEntity:groupEntities){
+            List<Long> tagIds = groupTagMapRepository.findAllByGroupId(groupEntity.getId()).stream()
+                    .map(GroupTagMapEntity::getTagId).collect(Collectors.toList());
+            List<String> tagName = tagRepository.findAllByIdIn(tagIds).stream().map(TagEntity::getName).collect(Collectors.toList());
+            GroupOutputAndTag groupOutputAndTag = new GroupOutputAndTag();
+            groupOutputAndTag.setIdGroup(groupEntity.getId());
+            groupOutputAndTag.setName(groupEntity.getName());
+            groupOutputAndTag.setMemberCount(groupEntity.getMemberCount());
+            groupOutputAndTag.setTagList(tagName);
+           groupOutputAndTags.add(groupOutputAndTag);
+       }
+        return new PageImpl<>(groupOutputAndTags, pageable, groupEntities.getTotalElements());
+    }
 
     @Transactional(readOnly = true)
     public Page<GroupOutput> getGroups(String search, Long tagId, Pageable pageable){
