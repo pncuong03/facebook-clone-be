@@ -15,4 +15,5 @@ public class FriendSearchingOutput {
     private String fullName;
     private Boolean isFriend;
     private Boolean hadSendFriendRequest;
+    private Boolean hadReceiverFriendRequest;
 }

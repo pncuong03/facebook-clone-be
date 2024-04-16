@@ -109,6 +109,54 @@ public class FriendsService {
                 });
     }
 
+    private Page<FriendSearchingOutput> setIsFriendOrHasRequestFriendForUsers(Long userId,
+                                                                              Page<FriendSearchingOutput> users){
+        if (Objects.isNull(users)){
+            return Page.empty();
+        }
+        List<Long> userIds = users.stream().map(FriendSearchingOutput::getId).collect(Collectors.toList());
+        // lấy map những thằng mình đã send friend request nhưng nó chưa đồng ý
+        Map<Long, Long> userSendRequestMap = friendRequestRepository.findAllBySenderIdAndReceiverIdIn(userId, userIds).stream()
+                .collect(Collectors.toMap(FriendRequestEntity::getReceiverId, FriendRequestEntity::getSenderId));
+        // Lấy map những thằng đã send friend request nhưng mình chưa đồng ý
+        Map<Long, Long> userReceiverRequestMap = friendRequestRepository.findAllBySenderIdInAndReceiverId(userIds, userId).stream()
+                .collect(Collectors.toMap(FriendRequestEntity::getSenderId, FriendRequestEntity::getReceiverId));
+        // Lấy những thằng đã là bạn bè mình rồi
+        List<FriendMapEntity> friendMapEntities = friendMapRepository.findAllByUserId(userId);
+        Map<Long, Long> friendMap = friendMapEntities.stream().map(
+                friendMapEntity -> {
+                    if (!userId.equals(friendMapEntity.getUserId1())){
+                        return friendMapEntity.getUserId2();
+                    }
+                    return friendMapEntity.getUserId1();
+                }
+        ).collect(Collectors.toMap(Function.identity(), Function.identity()));
+
+        return users.map(friendSearchingOutput -> {
+            if (userSendRequestMap.containsKey(friendSearchingOutput.getId())){
+                friendSearchingOutput.setHadSendFriendRequest(true);
+            }
+            else {
+                friendSearchingOutput.setHadSendFriendRequest(false);
+            }
+
+            if (userReceiverRequestMap.containsKey(friendSearchingOutput.getId())){
+                friendSearchingOutput.setHadReceiverFriendRequest(true);
+            }
+            else {
+                friendSearchingOutput.setHadReceiverFriendRequest(false);
+            }
+
+            if (friendMap.containsKey(friendSearchingOutput.getId())){
+                friendSearchingOutput.setIsFriend(true);
+            }
+            else {
+                friendSearchingOutput.setIsFriend(false);
+            }
+            return friendSearchingOutput;
+        });
+    }
+
     @Transactional(readOnly = true)
     public Page<FriendSearchingOutput> findUsers(String search, String accessToken, Pageable pageable) {
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
@@ -138,7 +186,7 @@ public class FriendsService {
 
         Map<Long, Long> finalFriendMap = friendMap;
         Map<Long, Long> finalFriendRequestMap = friendRequestMap;
-        return userEntities.map(
+        Page<FriendSearchingOutput> friendSearchingOutputs = userEntities.map(
                 userEntity -> {
                     FriendSearchingOutput friendSearching = userMapper.getFriendSearchingFrom(userEntity);
                     friendSearching.setIsFriend(finalFriendMap.containsKey(friendSearching.getId()));
@@ -146,6 +194,8 @@ public class FriendsService {
                     return friendSearching;
                 }
         );
+
+        return setIsFriendOrHasRequestFriendForUsers(userId, friendSearchingOutputs);
     }
 
     @Transactional(readOnly = true)
