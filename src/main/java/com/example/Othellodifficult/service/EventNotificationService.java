@@ -73,7 +73,11 @@ public class EventNotificationService {
                             MessageEventOutput messageEventOutput = notificationMapper.getOutputFromEntity(event);
                             messageEventOutput.setIsMe(false);
                             messageEventOutputs.add(messageEventOutput);
-                        } else if (Common.NOTIFICATION.equals(event.getEventType())) {
+//                        } else if (Common.NOTIFICATION.equals(event.getEventType())) {
+//                            eventCountOutput.setInformCount(eventCountOutput.getInformCount() + 1);
+//                        }
+                        }
+                        else {
                             eventCountOutput.setInformCount(eventCountOutput.getInformCount() + 1);
                         }
                     }

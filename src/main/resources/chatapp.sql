@@ -103,12 +103,12 @@
 --     created_at  TIMESTAMP
 -- );
 
-CREATE TABLE tbl_friend_map
-(
-    id        BIGSERIAL PRIMARY KEY,
-    user_id_1 BIGINT REFERENCES tbl_user (id),
-    user_id_2 BIGINT REFERENCES tbl_user (id)
-);
+-- CREATE TABLE tbl_friend_map
+-- (
+--     id        BIGSERIAL PRIMARY KEY,
+--     user_id_1 BIGINT REFERENCES tbl_user (id),
+--     user_id_2 BIGINT REFERENCES tbl_user (id)
+-- );
 
 -- CREATE TABLE tbl_notification
 -- (
@@ -146,12 +146,12 @@ CREATE TABLE tbl_friend_map
 --     group_id bigserial references tbl_group (id),
 --     tag_id   bigserial references tbl_tag (id)
 -- )
--- create table tbl_user_group_map(
---                                    id bigserial primary key,
---                                    user_id bigserial references tbl_user(id),
---                                    group_id bigserial references tbl_group(id),
---                                    role varchar
--- );
+create table tbl_user_group_map(
+                                   id bigserial primary key,
+                                   user_id bigserial references tbl_user(id),
+                                   group_id bigserial references tbl_group(id),
+                                   role varchar
+);
 
 ALTER TABLE tbl_chat ADD COLUMN image_url VARCHAR;
 ALTER TABLE tbl_chat ADD COLUMN newest_user_id BIGINT REFERENCES tbl_user(id);
