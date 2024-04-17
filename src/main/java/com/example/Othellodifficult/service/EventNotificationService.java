@@ -26,8 +26,7 @@ public class EventNotificationService {
     private final NotificationMapper notificationMapper;
 
     @Transactional()
-    public EventCountOutput getEvent(String accessToken, Long chatId) {
-        OffsetDateTime now = OffsetDateTime.now();
+    public EventCountOutput getEvent(String accessToken) {
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
         if (!map1.containsKey(userId)){
             System.out.println("FIRST CONNECT OF USER " + userId);
@@ -84,11 +83,11 @@ public class EventNotificationService {
                         if (Common.NOTIFICATION.equals(newEvent.getEventType())){
                             newEvent.setState(Common.OLD_EVENT);
                         }
-                        // them
-                        if (Common.MESSAGE.equals(newEvent.getEventType())
-                                && Objects.nonNull(chatId) && newEvent.getChatId().equals(chatId)){
-                            newEvent.setState(Common.OLD_EVENT);
-                        }
+//                        // them
+//                        if (Common.MESSAGE.equals(newEvent.getEventType())
+//                                && Objects.nonNull(chatId) && newEvent.getChatId().equals(chatId)){
+//                            newEvent.setState(Common.OLD_EVENT);
+//                        }
                     }
                     eventCountOutput.setMessageCount(messagesForCount.size());
                     if (!messageEventOutputs.isEmpty()){
@@ -101,6 +100,27 @@ public class EventNotificationService {
                     eventNotificationRepository.saveAll(newEvents);
                     return eventCountOutput;
                 }
+            }
+        }
+    }
+
+    @Transactional
+    public void deleteMessageEvent(String accessToken, Long chatId){
+        Long userId = TokenHelper.getUserIdFromToken(accessToken);
+        List<EventNotificationEntity> events = eventNotificationRepository.findAllByUserId(userId);
+        List<EventNotificationEntity> newMessageEvents = new ArrayList<>();
+
+        if (Objects.nonNull(events) && !events.isEmpty()){
+            for (EventNotificationEntity event : events) {
+                if (Common.NEW_EVENT.equals(event.getState())
+                        && Common.MESSAGE.equals(event.getEventType())
+                        && Objects.nonNull(chatId) && event.getChatId().equals(chatId)){
+                    event.setState(Common.OLD_EVENT);
+                    newMessageEvents.add(event);
+                }
+            }
+            if (!events.isEmpty()){
+                eventNotificationRepository.saveAll(newMessageEvents);
             }
         }
     }
