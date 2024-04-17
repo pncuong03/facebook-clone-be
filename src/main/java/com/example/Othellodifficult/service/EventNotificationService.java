@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -24,8 +25,9 @@ public class EventNotificationService {
     public static volatile Map<Long, Integer> map2 = new HashMap<>();  // oldNewMessage
     private final NotificationMapper notificationMapper;
 
-    @Transactional(timeout = 36000)
+    @Transactional()
     public EventCountOutput getEvent(String accessToken, Long chatId) {
+        OffsetDateTime now = OffsetDateTime.now();
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
         if (!map1.containsKey(userId)){
             System.out.println("FIRST CONNECT OF USER " + userId);

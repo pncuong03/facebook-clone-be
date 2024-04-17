@@ -125,7 +125,7 @@ public class FriendsService {
         List<FriendMapEntity> friendMapEntities = friendMapRepository.findAllByUserId(userId);
         Map<Long, Long> friendMap = friendMapEntities.stream().map(
                 friendMapEntity -> {
-                    if (!userId.equals(friendMapEntity.getUserId1())){
+                    if (userId.equals(friendMapEntity.getUserId1())){
                         return friendMapEntity.getUserId2();
                     }
                     return friendMapEntity.getUserId1();
