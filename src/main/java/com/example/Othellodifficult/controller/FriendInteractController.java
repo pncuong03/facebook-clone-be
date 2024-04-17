@@ -45,7 +45,7 @@ public class FriendInteractController {
     }
 
     @Operation(summary = "Danh sách người thích bài viết")
-    @DeleteMapping("/like/list")
+    @GetMapping("/like/list")
     public Page<UserOutput> getUsersLikeOfPost(@RequestParam Long postId,
                                                @ParameterObject Pageable pageable){
         return userInteractService.getUsersLikeOfPost(postId, pageable);

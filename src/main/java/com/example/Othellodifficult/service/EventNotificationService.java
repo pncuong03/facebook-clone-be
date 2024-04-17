@@ -25,7 +25,7 @@ public class EventNotificationService {
     private final NotificationMapper notificationMapper;
 
     @Transactional(timeout = 36000)
-    public EventCountOutput getEvent(String accessToken) {
+    public EventCountOutput getEvent(String accessToken, Long chatId) {
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
         if (!map1.containsKey(userId)){
             System.out.println("FIRST CONNECT OF USER " + userId);
@@ -73,9 +73,6 @@ public class EventNotificationService {
                             MessageEventOutput messageEventOutput = notificationMapper.getOutputFromEntity(event);
                             messageEventOutput.setIsMe(false);
                             messageEventOutputs.add(messageEventOutput);
-//                        } else if (Common.NOTIFICATION.equals(event.getEventType())) {
-//                            eventCountOutput.setInformCount(eventCountOutput.getInformCount() + 1);
-//                        }
                         }
                         else {
                             eventCountOutput.setInformCount(eventCountOutput.getInformCount() + 1);
@@ -83,6 +80,11 @@ public class EventNotificationService {
                     }
                     for (EventNotificationEntity newEvent : newEvents) {
                         if (Common.NOTIFICATION.equals(newEvent.getEventType())){
+                            newEvent.setState(Common.OLD_EVENT);
+                        }
+                        // them
+                        if (Common.MESSAGE.equals(newEvent.getEventType())
+                                && Objects.nonNull(chatId) && newEvent.getChatId().equals(chatId)){
                             newEvent.setState(Common.OLD_EVENT);
                         }
                     }
