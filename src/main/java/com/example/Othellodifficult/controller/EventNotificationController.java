@@ -19,7 +19,8 @@ public class EventNotificationController {
     }
 
     @GetMapping
-    public EventCountOutput getEvents(@RequestHeader(value = "Authorization") String accessToken){
-        return eventNotificationService.getEvent(accessToken);
+    public EventCountOutput getEvents(@RequestHeader(value = "Authorization") String accessToken,
+                                      @RequestParam(required = false) Long chatId){
+        return eventNotificationService.getEvent(accessToken, chatId);
     }
 }
