@@ -119,11 +119,11 @@ public class GroupService {
 
     @Transactional(readOnly = true)
     public Page<GroupMemberOutPut> getGroupMembers(Long groupId, String accessToken, Pageable pageable) {
-        if (Boolean.FALSE.equals(userGroupMapRepository.existsByUserIdAndGroupId(
-                TokenHelper.getUserIdFromToken(accessToken), groupId
-        ))) {
-            throw new RuntimeException(Common.ACTION_FAIL);
-        }
+//        if (Boolean.FALSE.equals(userGroupMapRepository.existsByUserIdAndGroupId(
+//                TokenHelper.getUserIdFromToken(accessToken), groupId
+//        ))) {
+//            throw new RuntimeException(Common.ACTION_FAIL);
+//        }
         Page<UserGroupMapEntity> userGroupEntities = userGroupMapRepository.findAllByGroupId(groupId, pageable);
         if (Objects.isNull(userGroupEntities) || userGroupEntities.isEmpty()) {
             return Page.empty();
