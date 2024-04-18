@@ -5,10 +5,7 @@ import com.example.Othellodifficult.common.Common;
 import com.example.Othellodifficult.dto.post.CreatePostGroupInput;
 import com.example.Othellodifficult.dto.post.CreatePostInput;
 import com.example.Othellodifficult.dto.post.PostOutput;
-import com.example.Othellodifficult.entity.LikeMapEntity;
-import com.example.Othellodifficult.entity.NotificationEntity;
-import com.example.Othellodifficult.entity.PostEntity;
-import com.example.Othellodifficult.entity.UserEntity;
+import com.example.Othellodifficult.entity.*;
 import com.example.Othellodifficult.entity.friend.FriendMapEntity;
 import com.example.Othellodifficult.helper.StringUtils;
 import com.example.Othellodifficult.mapper.PostMapper;
@@ -45,14 +42,18 @@ public class PostGroupService {
     public Page<PostOutput> getPostGroup(String accessToken, Long groupId, Pageable pageable) {
         Page<PostEntity> postEntityPage = postRepository.findAllByGroupId(groupId, pageable);
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
+        List<Long> userIds = userGroupMapRepository.findAllByGroupId(groupId).stream().map(
+                UserGroupMapEntity::getUserId
+        ).collect(Collectors.toList());
+        Map<Long, UserEntity> userEntityMap = userRepository.findAllByIdIn(userIds).stream().collect(Collectors.toMap(
+                UserEntity::getId,Function.identity()
+        ));
         if (Objects.isNull(postEntityPage) || postEntityPage.isEmpty()) {
             return Page.empty();
         }
         UserEntity userEntity = userRepository.findById(userId).orElseThrow(
                 () -> new RuntimeException(Common.RECORD_NOT_FOUND)
         );
-        Map<Long, UserEntity> userEntityMap = new HashMap<>();
-        userEntityMap.put(userEntity.getId(), userEntity);
         return setHasLikeForPosts(userId, mapResponsePostPage(postEntityPage, userEntityMap));
     }
 
