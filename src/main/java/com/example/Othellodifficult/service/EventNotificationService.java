@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -24,7 +25,7 @@ public class EventNotificationService {
     public static volatile Map<Long, Integer> map2 = new HashMap<>();  // oldNewMessage
     private final NotificationMapper notificationMapper;
 
-    @Transactional(timeout = 36000)
+    @Transactional
     public EventCountOutput getEvent(String accessToken, Long chatId) {
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
         if (!map1.containsKey(userId)){
@@ -99,6 +100,27 @@ public class EventNotificationService {
                     eventNotificationRepository.saveAll(newEvents);
                     return eventCountOutput;
                 }
+            }
+        }
+    }
+
+    @Transactional
+    public void deleteMessageEvent(String accessToken, Long chatId){
+        Long userId = TokenHelper.getUserIdFromToken(accessToken);
+        List<EventNotificationEntity> events = eventNotificationRepository.findAllByUserId(userId);
+        List<EventNotificationEntity> newMessageEvents = new ArrayList<>();
+
+        if (Objects.nonNull(events) && !events.isEmpty()){
+            for (EventNotificationEntity event : events) {
+                if (Common.NEW_EVENT.equals(event.getState())
+                        && Common.MESSAGE.equals(event.getEventType())
+                        && Objects.nonNull(chatId) && event.getChatId().equals(chatId)){
+                    event.setState(Common.OLD_EVENT);
+                    newMessageEvents.add(event);
+                }
+            }
+            if (!events.isEmpty()){
+                eventNotificationRepository.saveAll(newMessageEvents);
             }
         }
     }

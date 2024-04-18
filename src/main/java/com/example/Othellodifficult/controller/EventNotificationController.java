@@ -12,6 +12,12 @@ import org.springframework.web.bind.annotation.*;
 public class EventNotificationController {
     private final EventNotificationService eventNotificationService;
 
+    @DeleteMapping
+    public void deleteMessageEvent(@RequestHeader(value = "Authorization") String accessToken,
+                                   @RequestParam Long chatId){
+        eventNotificationService.deleteMessageEvent(accessToken, chatId);
+    }
+
     @GetMapping
     public EventCountOutput getEvents(@RequestHeader(value = "Authorization") String accessToken,
                                       @RequestParam(required = false) Long chatId){
