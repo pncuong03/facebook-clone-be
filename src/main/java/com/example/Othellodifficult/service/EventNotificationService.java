@@ -25,7 +25,7 @@ public class EventNotificationService {
     public static volatile Map<Long, Integer> map2 = new HashMap<>();  // oldNewMessage
     private final NotificationMapper notificationMapper;
 
-    @Transactional()
+    @Transactional
     public EventCountOutput getEvent(String accessToken, Long chatId) {
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
         if (!map1.containsKey(userId)){
