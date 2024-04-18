@@ -82,7 +82,7 @@ public class GroupChatService {
         Long managerId = chatEntity.getManagerId();
 
         List<UserEntity> userEntities = userRepository.findAllByIdIn(
-                userChatEntities.stream().map(UserChatMapEntity::getId).collect(Collectors.toList())
+                userChatEntities.stream().map(UserChatMapEntity::getUserId).collect(Collectors.toList())
         );
 
         List<ChatMemberOutput> groupMemberOutputs = new ArrayList<>();
