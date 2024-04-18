@@ -164,6 +164,7 @@ public class GroupService {
                     UserGroupMapEntity.builder()
                             .userId(newUserId)
                             .groupId(groupAddNewMemberInput.getGroupId())
+                            .role(Common.MEMBER)
                             .build()
             );
         }
