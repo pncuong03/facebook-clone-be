@@ -80,7 +80,7 @@ public class EventNotificationService {
                         }
                     }
                     for (EventNotificationEntity newEvent : newEvents) {
-                        if (Common.NOTIFICATION.equals(newEvent.getEventType())){
+                        if (!Common.MESSAGE.equals(newEvent.getEventType())){
                             newEvent.setState(Common.OLD_EVENT);
                         }
                         // them
