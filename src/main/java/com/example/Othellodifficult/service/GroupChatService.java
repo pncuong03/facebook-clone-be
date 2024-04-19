@@ -156,18 +156,19 @@ public class GroupChatService {
     }
 
     @Transactional
-    public void leaveTheGroupChat(ChatLeaveTheGroupInput chatLeaveTheGroupInput) {
-        if (userChatMapRepository.countByChatId(chatLeaveTheGroupInput.getGroupId()) > 1) {
+    public void leaveTheGroupChat(String accessToken, Long chatId) {
+        Long userId = TokenHelper.getUserIdFromToken(accessToken);
+        if (userChatMapRepository.countByChatId(chatId) > 1) {
             userChatMapRepository.deleteByUserIdAndChatId(
-                    chatLeaveTheGroupInput.getUserId(),
-                    chatLeaveTheGroupInput.getGroupId()
+                    userId,
+                    chatId
             );
         } else {
             userChatMapRepository.deleteByUserIdAndChatId(
-                    chatLeaveTheGroupInput.getUserId(),
-                    chatLeaveTheGroupInput.getGroupId()
+                    userId,
+                    chatId
             );
-            chatRepository.deleteById(chatLeaveTheGroupInput.getGroupId());
+//            chatRepository.deleteById(chatLeaveTheGroupInput.getGroupId());
         }
     }
 }

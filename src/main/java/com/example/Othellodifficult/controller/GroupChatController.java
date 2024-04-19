@@ -46,7 +46,8 @@ public class GroupChatController {
 
     @DeleteMapping("/leave-group")
     @Operation(summary = "Rời nhóm chat")
-    public void leaveTheGroupChat(@RequestBody ChatLeaveTheGroupInput chatLeaveTheGroupInput) {
-        chatService.leaveTheGroupChat(chatLeaveTheGroupInput);
+    public void leaveTheGroupChat(@RequestHeader("Authorization") String accessToken,
+                                  @RequestParam Long chatId) {
+        chatService.leaveTheGroupChat(accessToken, chatId);
     }
 }
