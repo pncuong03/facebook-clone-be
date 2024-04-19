@@ -75,7 +75,7 @@ public class EventNotificationService {
                             messageEventOutput.setIsMe(false);
                             messageEventOutputs.add(messageEventOutput);
                         }
-                        else {
+                        else if (!Common.MESSAGE.equals(event.getEventType()) && Common.NEW_EVENT.equals(event.getState())){
                             eventCountOutput.setInformCount(eventCountOutput.getInformCount() + 1);
                         }
                     }
