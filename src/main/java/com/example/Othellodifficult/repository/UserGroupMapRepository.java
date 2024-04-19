@@ -11,6 +11,7 @@ import java.util.List;
 
 @Repository
 public interface UserGroupMapRepository extends JpaRepository<UserGroupMapEntity, Long> {
+    void deleteAllByUserIdAndGroupId(Long userId, Long groupId);
     Boolean existsByUserIdInAndGroupId(Collection<Long> userIds, Long groupId);
     Boolean existsByUserIdAndGroupId(Long userId, Long groupId);
     List<UserGroupMapEntity> findAllByGroupId(Long groupId);

@@ -181,7 +181,7 @@ public class GroupService {
 //        if (userId.equals(groupDeleteMemberInput.getUserId())) {
 //            throw new RuntimeException(Common.ACTION_FAIL);
 //        }
-        userGroupMapRepository.deleteByUserIdAndGroupId(groupDeleteMemberInput.getUserId(), groupDeleteMemberInput.getGroupId());
+        userGroupMapRepository.deleteAllByUserIdAndGroupId(groupDeleteMemberInput.getUserId(), groupDeleteMemberInput.getGroupId());
     }
 
     @Transactional
