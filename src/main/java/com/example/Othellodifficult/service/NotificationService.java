@@ -73,9 +73,9 @@ public class NotificationService {
             });
         }
 
-        List<EventNotificationEntity> events = eventNotificationRepository.findAllByUserIdAndEventTypeAndState(
+        List<EventNotificationEntity> events = eventNotificationRepository.findAllByUserIdAndEventTypeIsNotAndState(
                 userId,
-                Common.NOTIFICATION,
+                Common.MESSAGE,
                 Common.NEW_EVENT
         );
         if (Objects.nonNull(events) && !events.isEmpty()){
