@@ -30,4 +30,5 @@ public class PostOutput {
     private Integer shareCount;
     private List<CommentOutput> comments;
     private Boolean hasLike;
+    private String type;
 }
