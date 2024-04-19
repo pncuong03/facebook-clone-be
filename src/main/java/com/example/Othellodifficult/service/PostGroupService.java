@@ -40,7 +40,7 @@ public class PostGroupService {
 
     @Transactional(readOnly = true)
     public Page<PostOutput> getPostGroup(String accessToken, Long groupId, Pageable pageable) {
-        Page<PostEntity> postEntityPage = postRepository.findAllByGroupId(groupId, pageable);
+        Page<PostEntity> postEntityPage = postRepository.findAllByGroupIdAndType(groupId,Common.GROUP, pageable);
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
         List<Long> userIds = userGroupMapRepository.findAllByGroupId(groupId).stream().map(
                 UserGroupMapEntity::getUserId
