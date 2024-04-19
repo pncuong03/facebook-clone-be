@@ -73,15 +73,16 @@ public class NotificationService {
             });
         }
 
-        List<EventNotificationEntity> events = eventNotificationRepository.findAllByUserIdAndEventTypeIsNotAndState(
+        List<EventNotificationEntity> events = eventNotificationRepository.findAllByUserIdAndState(
                 userId,
-                Common.MESSAGE,
                 Common.NEW_EVENT
         );
         if (Objects.nonNull(events) && !events.isEmpty()){
             for (EventNotificationEntity event : events){
-                event.setState(Common.OLD_EVENT);
-                eventNotificationRepository.save(event);
+                if (!Common.MESSAGE.equals(event.getEventType())){
+                    event.setState(Common.OLD_EVENT);
+                    eventNotificationRepository.save(event);
+                }
             }
         }
 
