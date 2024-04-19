@@ -73,6 +73,18 @@ public class NotificationService {
             });
         }
 
+        List<EventNotificationEntity> events = eventNotificationRepository.findAllByUserIdAndEventTypeAndState(
+                userId,
+                Common.NOTIFICATION,
+                Common.NEW_EVENT
+        );
+        if (Objects.nonNull(events) && !events.isEmpty()){
+            for (EventNotificationEntity event : events){
+                event.setState(Common.OLD_EVENT);
+                eventNotificationRepository.save(event);
+            }
+        }
+
         return notificationEntities.map(notificationEntity -> {
             NotificationOutput notificationOutput = notificationMapper.getOutputFromEntity(notificationEntity);
             if (Objects.nonNull(notificationEntity.getInteractId())) {

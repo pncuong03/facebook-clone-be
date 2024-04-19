@@ -10,6 +10,7 @@ import java.util.List;
 
 @Repository
 public interface EventNotificationRepository extends JpaRepository<EventNotificationEntity, Long> {
+    List<EventNotificationEntity> findAllByUserIdAndEventTypeAndState(Long userId, String eventType, String state);
     List<EventNotificationEntity> findAllByUserId(Long userId);
     List<EventNotificationEntity> findAllByIdIn(Collection<Long> ids);
     List<EventNotificationEntity> findAllByUserIdAndEventType(Long userId, String eventType);
