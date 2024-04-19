@@ -80,9 +80,9 @@ public class EventNotificationService {
                         }
                     }
                     for (EventNotificationEntity newEvent : newEvents) {
-                        if (!Common.MESSAGE.equals(newEvent.getEventType())){
-                            newEvent.setState(Common.OLD_EVENT);
-                        }
+//                        if (!Common.MESSAGE.equals(newEvent.getEventType())){
+//                            newEvent.setState(Common.OLD_EVENT);
+//                        }
                         // them
                         if (Common.MESSAGE.equals(newEvent.getEventType())
                                 && Objects.nonNull(chatId) && newEvent.getChatId().equals(chatId)){
