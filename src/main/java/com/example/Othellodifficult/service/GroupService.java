@@ -172,15 +172,15 @@ public class GroupService {
 
     @Transactional
     public void deleteMember(String accessToken, GroupDeleteMemberInput groupDeleteMemberInput) {
-        Long userId = TokenHelper.getUserIdFromToken(accessToken);
-        Long managerId = userGroupMapRepository
-                .findByGroupIdAndRole(groupDeleteMemberInput.getGroupId(),Common.ADMIN).getUserId();
-        if (!userId.equals(managerId)) {
-            throw new RuntimeException(Common.ACTION_FAIL);
-        }
-        if (userId.equals(groupDeleteMemberInput.getUserId())) {
-            throw new RuntimeException(Common.ACTION_FAIL);
-        }
+//        Long userId = TokenHelper.getUserIdFromToken(accessToken);
+//        Long managerId = userGroupMapRepository
+//                .findByGroupIdAndRole(groupDeleteMemberInput.getGroupId(),Common.ADMIN).getUserId();
+//        if (!userId.equals(managerId)) {
+//            throw new RuntimeException(Common.ACTION_FAIL);
+//        }
+//        if (userId.equals(groupDeleteMemberInput.getUserId())) {
+//            throw new RuntimeException(Common.ACTION_FAIL);
+//        }
         userGroupMapRepository.deleteByUserIdAndGroupId(groupDeleteMemberInput.getUserId(), groupDeleteMemberInput.getGroupId());
     }
 
