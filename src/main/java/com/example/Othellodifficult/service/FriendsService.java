@@ -385,7 +385,7 @@ public class FriendsService {
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
         friendMapRepository.deleteAllByUserId1AndUserId2(userId, friendId);
         friendMapRepository.deleteAllByUserId1AndUserId2(friendId, userId);
-        chatRepository.deleteAllByUserId1AndUserId2(userId, friendId);
-        chatRepository.deleteAllByUserId1AndUserId2(friendId, userId);
+//        chatRepository.deleteAllByUserId1AndUserId2(userId, friendId);
+//        chatRepository.deleteAllByUserId1AndUserId2(friendId, userId);
     }
 }
