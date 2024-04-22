@@ -9,7 +9,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-
 public class GroupDeleteMemberInput {
     private Long groupId;
     private Long userId;
