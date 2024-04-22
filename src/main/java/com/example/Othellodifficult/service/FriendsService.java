@@ -323,6 +323,8 @@ public class FriendsService {
                         .userId1(receiverId)
                         .userId2(senderId)
                         .newestUserId(1L)
+                        .newestChatTime(LocalDateTime.now())
+                        .newestChatTime("2 bạn vừa là bạn bè của nhau")
                         .build()
         );
 
@@ -335,6 +337,8 @@ public class FriendsService {
                         .userId2(receiverId)
                         .newestUserId(1L)
                         .userId1(senderId)
+                        .newestChatTime(LocalDateTime.now())
+                        .newestChatTime("2 bạn vừa là bạn bè của nhau")
                         .build()
         );
 
