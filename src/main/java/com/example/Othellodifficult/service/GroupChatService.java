@@ -73,7 +73,7 @@ public class GroupChatService {
         chatEntity.setChatType(Common.GROUP);
         chatEntity.setNewestUserId(managerId);
         chatEntity.setNewestMessage("Created Group");
-
+        chatEntity.setImageUrl("https://res.cloudinary.com/ds9ipqi3z/image/upload/v1713964597/o01ocuafi6hrpnd6basc.jpg");
 
         chatRepository.save(chatEntity);
 
