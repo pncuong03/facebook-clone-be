@@ -2,7 +2,9 @@ package com.example.Othellodifficult.service;
 
 import com.example.Othellodifficult.common.Common;
 import com.example.Othellodifficult.dto.chat.*;
+import com.example.Othellodifficult.dto.group.GroupOutput;
 import com.example.Othellodifficult.entity.ChatEntity;
+import com.example.Othellodifficult.entity.GroupEntity;
 import com.example.Othellodifficult.entity.UserEntity;
 import com.example.Othellodifficult.entity.UserChatMapEntity;
 import com.example.Othellodifficult.mapper.ChatMapper;
@@ -12,11 +14,14 @@ import com.example.Othellodifficult.repository.UserChatRepository;
 import com.example.Othellodifficult.repository.UserRepository;
 import com.example.Othellodifficult.token.TokenHelper;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -35,6 +40,25 @@ public class GroupChatService {
                 () -> new RuntimeException(Common.RECORD_NOT_FOUND)
         );
     }
+
+    @Transactional(readOnly = true)
+    public Page<GroupChatOutPut> getGroups(String accessToken, String search, Pageable pageable){
+        // lay map => lay chatId
+        Long userId = TokenHelper.getUserIdFromToken(accessToken);
+        List<Long> chatIds = userChatMapRepository.findAllByUserId(userId).stream().map(
+                UserChatMapEntity::getChatId
+        ).collect(Collectors.toList());
+
+        Page<ChatEntity> groupChatEntities = Page.empty();
+        if (Objects.isNull(search)){
+            groupChatEntities = chatRepository.findAllByIdIn(chatIds, pageable);
+        } else{
+            groupChatEntities = chatRepository.findAllByNameContainingIgnoreCaseAndIdIn(search, chatIds, pageable);
+        }
+
+        return groupChatEntities.map(chatMapper::getGroupChatOutputFromEntity);
+    }
+
 
     @Transactional
     public void createGroupChat(CreateGroupChatInput createGroupChatInput, String accessToken) {

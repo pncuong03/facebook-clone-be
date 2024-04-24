@@ -34,3 +34,4 @@ public class ChatController {
         return chatService.getChatList(search, accessToken, pageable);
     }
 }
+
