@@ -183,7 +183,7 @@ public class PostService {
        return setHasLikeForPosts(userId,mapResponsePostPage(PostsOfFriendProfile,friendMap));
     }
 
-    private Page<PostOutput> mapResponsePostPage(Page<PostEntity> postEntityPage, Map<Long, UserEntity> userEntityMap) {
+    public Page<PostOutput> mapResponsePostPage(Page<PostEntity> postEntityPage, Map<Long, UserEntity> userEntityMap) {
         List<Long> shareIds = new ArrayList<>();
         for (PostEntity postEntity : postEntityPage) {
             if (Objects.nonNull(postEntity.getShareId())) {
@@ -242,7 +242,7 @@ public class PostService {
         );
     }
 
-    private Page<PostOutput> setHasLikeForPosts(Long userId, Page<PostOutput> postOutputs){
+    public Page<PostOutput> setHasLikeForPosts(Long userId, Page<PostOutput> postOutputs){
         List<LikeMapEntity> likeMapEntities = likeMapRepository.findAllByUserIdAndPostIdIn(
                 userId,
                 postOutputs.map(PostOutput::getId).toList()

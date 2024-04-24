@@ -175,7 +175,7 @@ public class UserInteractService {
         postOutput.setImageUrls(StringUtils.getListFromString(postEntity.getImageUrlsString()));
         if (Objects.nonNull(postEntity.getShareId())) {
             PostEntity sharedPostEntity = customRepository.getPost(postEntity.getShareId());
-            UserEntity sharedUserEntity = customRepository.getUser(postEntity.getShareId());
+            UserEntity sharedUserEntity = customRepository.getUser(postEntity.getUserId());
             PostOutput sharedPostOutput = postMapper.getOutputFromEntity(sharedPostEntity);
             sharedPostOutput.setFullName(sharedUserEntity.getFullName());
             sharedPostOutput.setImageUrl(sharedUserEntity.getImageUrl());

@@ -1,6 +1,7 @@
 package com.example.Othellodifficult.dto.event;
 
 import com.example.Othellodifficult.dto.IdAndName;
+import com.example.Othellodifficult.dto.post.PostOutput;
 import com.example.Othellodifficult.dto.user.UserOutput;
 import com.example.Othellodifficult.dto.user.UserOutputV2;
 import lombok.AllArgsConstructor;
@@ -27,4 +28,5 @@ public class NotificationOutput {
 
     private UserOutput interact;
     private IdAndName group;
+    private PostOutput post;
 }
