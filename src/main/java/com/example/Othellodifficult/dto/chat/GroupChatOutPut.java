@@ -11,5 +11,5 @@ import lombok.*;
 public class GroupChatOutPut {
     private Long id;
     private String name;
-//    private String img = Common.DEFAULT_IMAGE_URL;
+    private String img;
 }

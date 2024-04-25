@@ -56,7 +56,11 @@ public class GroupChatService {
             groupChatEntities = chatRepository.findAllByNameContainingIgnoreCaseAndIdIn(search, chatIds, pageable);
         }
 
-        return groupChatEntities.map(chatMapper::getGroupChatOutputFromEntity);
+        return groupChatEntities.map(chatEntity -> {
+            GroupChatOutPut groupChatOutPut = chatMapper.getGroupChatOutputFromEntity(chatEntity);
+            groupChatOutPut.setImg(Common.DEFAULT_IMAGE_URL);
+            return groupChatOutPut;
+        });
     }
 
 
