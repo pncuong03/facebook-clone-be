@@ -1,5 +1,6 @@
 package com.example.Othellodifficult.dto.chat;
 
+import com.example.Othellodifficult.common.Common;
 import lombok.*;
 
 @AllArgsConstructor
@@ -10,4 +11,5 @@ import lombok.*;
 public class GroupChatOutPut {
     private Long id;
     private String name;
+//    private String img = Common.DEFAULT_IMAGE_URL;
 }
