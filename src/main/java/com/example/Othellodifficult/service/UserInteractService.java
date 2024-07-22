@@ -167,9 +167,11 @@ public class UserInteractService {
 
     @Transactional(readOnly = true)
     public PostOutput getPostAndComment(Long postId, String accessToken) {
+        Long userId = TokenHelper.getUserIdFromToken(accessToken);
         PostEntity postEntity = customRepository.getPost(postId);
         UserEntity userEntity = customRepository.getUser(postEntity.getUserId());
         PostOutput postOutput = postMapper.getOutputFromEntity(postEntity);
+        postOutput.setHasLike(likeMapRepository.existsByUserIdAndPostId(userId,postId)?Boolean.TRUE:Boolean.FALSE);
         postOutput.setFullName(userEntity.getFullName());
         postOutput.setImageUrl(userEntity.getImageUrl());
         postOutput.setImageUrls(StringUtils.getListFromString(postEntity.getImageUrlsString()));
@@ -192,7 +194,6 @@ public class UserInteractService {
         ).stream().collect(Collectors.toMap(UserEntity::getId, Function.identity()));
 
         List<CommentOutput> commentOutputs = new ArrayList<>();
-        Long userId = TokenHelper.getUserIdFromToken(accessToken);
         for (CommentMapEntity commentMapEntity : commentMapEntities) {
             UserEntity commentUser = userCommentMap.get(commentMapEntity.getUserId());
             commentOutputs.add(
