@@ -1,48 +1,48 @@
-server:
-  port: 8086
-
-spring:
-  #  jpa:
-  #    show-sql: true
-  #    properties:
-  #      hibernate:
-  #        format_sql: true
-
-  datasource:
-    url: jdbc:postgresql://monorail.proxy.rlwy.net:36643/railway
-    username: postgres
-    password: b3ggD6f*5FAG-dAE-6caeaB-*-ecaeB5
-    driver-class-name: org.postgresql.Driver
-    hikari:
-      maximum-pool-size: 40
-
+#server:
+#  port: 8086
+#
 #spring:
+#  #  jpa:
+#  #    show-sql: true
+#  #    properties:
+#  #      hibernate:
+#  #        format_sql: true
+#
 #  datasource:
-#    datasource:
-#      url: jdbc:postgresql://monorail.proxy.rlwy.net:36643/railway
-#      username: postgres
-#      password: b3ggD6f*5FAG-dAE-6caeaB-*-ecaeB5
-#      driver-class-name: org.postgresql.Driver
-#      hikari:
-#        maximum-pool-size: 40
-
-
-#  CREATE TABLE tbl_user(
-#  id BIGSERIAL PRIMARY KEY,
-#  username VARCHAR,
-#  password VARCHAR,
-#  image_url VARCHAR,
-#  birthday VARCHAR,
-#  description VARCHAR
-#  );
+#    url: jdbc:postgresql://monorail.proxy.rlwy.net:36643/railway
+#    username: postgres
+#    password: b3ggD6f*5FAG-dAE-6caeaB-*-ecaeB5
+#    driver-class-name: org.postgresql.Driver
+#    hikari:
+#      maximum-pool-size: 40
 #
-#  CREATE TABLE tbl_group_chat(
-#  id BIGSERIAL PRIMARY KEY,
-#  name VARCHAR
-#  );
+##spring:
+##  datasource:
+##    datasource:
+##      url: jdbc:postgresql://monorail.proxy.rlwy.net:36643/railway
+##      username: postgres
+##      password: b3ggD6f*5FAG-dAE-6caeaB-*-ecaeB5
+##      driver-class-name: org.postgresql.Driver
+##      hikari:
+##        maximum-pool-size: 40
 #
-#  CREATE TABLE tbl_user_group_chat(
-#  id BIGSERIAL PRIMARY KEY,
-#  user_id BIGINT REFERENCES tbl_user(id),
-#  group_chat_id BIGINT REFERENCES tbl_group_chat(id)
-#  );
+#
+##  CREATE TABLE tbl_user(
+##  id BIGSERIAL PRIMARY KEY,
+##  username VARCHAR,
+##  password VARCHAR,
+##  image_url VARCHAR,
+##  birthday VARCHAR,
+##  description VARCHAR
+##  );
+##
+##  CREATE TABLE tbl_group_chat(
+##  id BIGSERIAL PRIMARY KEY,
+##  name VARCHAR
+##  );
+##
+##  CREATE TABLE tbl_user_group_chat(
+##  id BIGSERIAL PRIMARY KEY,
+##  user_id BIGINT REFERENCES tbl_user(id),
+##  group_chat_id BIGINT REFERENCES tbl_group_chat(id)
+##  );
