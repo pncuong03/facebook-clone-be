@@ -66,7 +66,7 @@ public class MessageService {
                 eventNotificationRepository.save(
                         EventNotificationEntity.builder()
                                 .eventType(Common.MESSAGE)
-                                .userId(chatEntity.getUserId2())
+                                .userId(chatEntity.getUserId1())
                                 .imageUrl(sender.getImageUrl())
                                 .fullName(sender.getFullName())
                                 .state(Common.NEW_EVENT)
@@ -75,7 +75,7 @@ public class MessageService {
                                 .message(messageInput.getMessage())
                                 .build()
                 );
-                EventHelper.pushEventForUserByUserId(chatEntity.getUserId2());
+                EventHelper.pushEventForUserByUserId(chatEntity.getUserId1());
             } else { // if chat user-group
                 List<UserChatMapEntity> userChatEntities = userChatRepository.findAllByChatId(messageInput.getChatId()).stream()
                         .filter(userChatEntity -> !userChatEntity.getUserId().equals(senderId))

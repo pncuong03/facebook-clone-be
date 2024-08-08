@@ -66,17 +66,33 @@ public class UserController {
 
     // 2024-03-20T17:04:52.755Z
     @Operation(summary = "Thay đổi thông tin cá nhân")
-    @PostMapping(value = "/change-user-information", consumes = {
-            MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE
-    })
+    @PostMapping(value = "/change-user-information")
     public void changeUserInformation(@RequestPart("new_user_info") @Valid String changeInfoUserRequestString,
-                                      @RequestHeader(value = Common.AUTHORIZATION) String accessToken,
-                                      @RequestPart(value = "image", required = false) MultipartFile avatar,
-                                      @RequestPart(value = "image_background", required = false) MultipartFile background) throws JsonProcessingException {
+                                      @RequestHeader(value = Common.AUTHORIZATION) String accessToken) throws JsonProcessingException {
         ChangeInfoUserRequest changeInfoUserRequest;
         ObjectMapper objectMapper = new ObjectMapper();
         changeInfoUserRequest = objectMapper.readValue(changeInfoUserRequestString, ChangeInfoUserRequest.class);
-        userService.changeUserInformation(changeInfoUserRequest, accessToken, avatar, background);
+        userService.changeUserInformation(changeInfoUserRequest, accessToken);
+    }
+
+    @Operation(summary = "Thay đổi ảnh bìa")
+    @PostMapping(value = "/change-user-background", consumes = {
+            MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE
+    })
+    public void changeUserBackground(
+                                      @RequestHeader(value = Common.AUTHORIZATION) String accessToken,
+                                      @RequestPart(value = "image_background", required = false) MultipartFile background)  {
+        userService.changeUserBackground( accessToken, background);
+    }
+
+    @Operation(summary = "Thay đổi ảnh đại diện")
+    @PostMapping(value = "/change-user-avatar", consumes = {
+            MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE
+    })
+    public void changeUserAvatar(
+            @RequestHeader(value = Common.AUTHORIZATION) String accessToken,
+            @RequestPart(value = "image", required = false) MultipartFile avatar)  {
+        userService.changeUserAvatar( accessToken, avatar);
     }
 
     @Operation(summary = "Đăng ký tài khoản")

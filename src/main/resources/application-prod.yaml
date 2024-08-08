@@ -1,0 +1,17 @@
+server:
+  port: 8086
+
+spring:
+  #  jpa:
+  #    show-sql: true
+  #    properties:
+  #      hibernate:
+  #        format_sql: true
+
+  datasource:
+    url: jdbc:postgresql://monorail.proxy.rlwy.net:36643/railway
+    username: postgres
+    password: b3ggD6f*5FAG-dAE-6caeaB-*-ecaeB5
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 40

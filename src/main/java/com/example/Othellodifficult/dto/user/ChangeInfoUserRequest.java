@@ -16,5 +16,5 @@ public class ChangeInfoUserRequest {
     private String birthdayString;
     private String gender;
     private String description;
-    private String backgroundUrl;
+//    private String backgroundUrl;
 }

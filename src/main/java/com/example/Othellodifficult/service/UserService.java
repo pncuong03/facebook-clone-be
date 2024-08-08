@@ -43,22 +43,44 @@ public class UserService {
 
     @Transactional
     public void changeUserInformation(ChangeInfoUserRequest changeInfoUserRequest,
-                                      String accessToken,
-                                      MultipartFile avatar, MultipartFile background){
+                                      String accessToken){
         Long userId = TokenHelper.getUserIdFromToken(accessToken);
         UserEntity userEntity = getUserBy(userId);
         userMapper.updateEntityFromInput(userEntity, changeInfoUserRequest);
-        userEntity.setBirthday(OffsetDateTime.parse(changeInfoUserRequest.getBirthdayString()));
+//        userEntity.setBirthday(OffsetDateTime.parse(changeInfoUserRequest.getBirthdayString()))
+
+        userRepository.save(userEntity);
+    }
+
+    @Transactional
+    public void changeUserBackground(
+                                      String accessToken,
+                                     MultipartFile background){
+        Long userId = TokenHelper.getUserIdFromToken(accessToken);
+        UserEntity userEntity = getUserBy(userId);
+
         if(Objects.isNull(background)){
             userEntity.setBackgroundUrl(Common.DEFAULT_BACKGROUND);
         }else{
             userEntity.setBackgroundUrl(CloudinaryHelper.uploadAndGetFileUrl(background));
         }
+
+        userRepository.save(userEntity);
+    }
+
+    @Transactional
+    public void changeUserAvatar(
+            String accessToken,
+            MultipartFile avatar){
+        Long userId = TokenHelper.getUserIdFromToken(accessToken);
+        UserEntity userEntity = getUserBy(userId);
+
         if(Objects.isNull(avatar)){
-            userEntity.setImageUrl(Common.DEFAULT_IMAGE_URL);
+            userEntity.setBackgroundUrl(Common.DEFAULT_BACKGROUND);
         }else{
             userEntity.setImageUrl(CloudinaryHelper.uploadAndGetFileUrl(avatar));
         }
+
         userRepository.save(userEntity);
     }
 
@@ -75,6 +97,7 @@ public class UserService {
         userRepository.save(userEntity);
         return TokenHelper.generateToken(userEntity);
     }
+
 
     @Transactional(readOnly = true)
     public String logIn(UserRequest logInRequest){
